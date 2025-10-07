@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sharealuxz - Transfert de fichiers</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5140484634474159"
+        crossorigin="anonymous"></script>
+    <link rel="icon" href="image.png">
+</head>
+
+<body>
+    <div id="tktcr" class="tktcr"><video src="./Video ref.mp4"></video></div>
+    <header>
+        <h1 onclick="window.location.href='/'"><img src="image.png" alt="Logo"
+                style="width: 50px; height: 50px; filter: drop-shadow(0 0 10px rgba(45, 45, 45, 0.5)); border-radius: 50%;">Sharealuxz
+        </h1>
+        <div class="tabs">
+            <button class="tab-btn active l" data-tab="receive">Recevoir</button>
+            <button class="tab-btn r" data-tab="send">Envoyer</button>
+        </div>
+
+        <button onclick="ChangeMode()" class="dark-light-btn">
+            <i class="fas fa-adjust"></i>
+        </button>
+    </header>
+    <div class="container">
+        <main>
+            <section id="send" class="tab-content">
+                <div class="card">
+                    <h2>Envoyer un fichier</h2>
+
+                    <div class="file-upload-container">
+                        <div class="file-drop-area">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Glisser des fichiers/dossiers ici ou</p>
+                            <div class="upload-options">
+                                <label for="file-input" class="select-file-btn">Sélectionner des fichiers</label>
+                                <input type="file" id="file-input" multiple hidden>
+                                <label for="folder-input" class="select-file-btn">Sélectionner un dossier</label>
+                                <input type="file" id="folder-input" webkitdirectory directory hidden>
+                            </div>
+                        </div>
+                        <div class="file-info" hidden>
+                            <div class="file-preview">
+                                <div class="preview-container">
+                                    <!-- Aperçu des fichiers sera inséré ici -->
+                                </div>
+                                <div class="file-details">
+                                    <span class="file-count">0 fichiers sélectionnés</span>
+                                    <span class="file-size">Taille totale: 0 KB</span>
+                                </div>
+                            </div>
+                            <button style="display: none;" id="cancel-file" class="secondary-btn"
+                                onclick="window.location.reload()">Annuler</button>
+                        </div>
+                    </div>
+
+                    <div class="code-container" hidden>
+                        <h3>Votre code de transfert</h3>
+                        <div class="transfer-code">
+                            <span id="transfer-code">--------</span>
+                            <button id="copy-code-btn" title="Copier le code"><i class="fas fa-copy"></i></button>
+                            <button id="share-link-btn" title="Générer un lien de partage"><i
+                                    class="fas fa-link"></i></button>
+                        </div>
+                        <p>Partagez ce code ou un lien direct avec la personne qui doit recevoir le fichier</p>
+                    </div>
+
+                    <div class="transfer-status" hidden>
+                        <h3>Statut du transfert</h3>
+                        <div class="connection-status waiting">
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                            <span>En attente de connexion...</span>
+                        </div>
+                        <div class="progress-container" hidden>
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span class="progress-percentage">0%</span>
+                                <span class="progress-transferred">0 MB / 0 MB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="start-send-btn" class="primary-btn" disabled>Envoyer</button>
+                        <button id="cancel-send-btn" class="secondary-btn" hidden>Annuler</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="receive" class="tab-content active">
+                <div class="card">
+                    <h2>Recevoir un fichier</h2>
+
+                    <div class="code-input-container">
+                        <h3>Entrez le code de transfert</h3>
+                        <form action="">
+                            <div class="code-input-wrapper">
+                                <input type="text" id="code-input" maxlength="8" placeholder="XXXXXXXX"
+                                    inputmode="numeric" pattern="[0-9]*">
+                                <button id="connect-btn" class="primary-btn">Connecter</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="receive-status" hidden>
+                        <h3>Statut du transfert</h3>
+                        <div class="connection-status waiting">
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                            <span>Connexion en cours...</span>
+                        </div>
+                        <div class="file-info-receive" hidden>
+                            <h4>Fichier à recevoir :</h4>
+                            <div class="file-details">
+                                <i class="fas fa-file"></i>
+                                <div>
+                                    <span class="incoming-file-name">Nom du fichier</span>
+                                    <span class="incoming-file-size">Taille</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="progress-container" hidden>
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span class="progress-percentage">0%</span>
+                                <span class="progress-transferred">0 MB / 0 MB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="accept-receive-btn" class="primary-btn" hidden>Accepter</button>
+                        <button id="cancel-receive-btn" class="secondary-btn" hidden>Refuser</button>
+                        <button id="download-btn" class="primary-btn" hidden>Télécharger</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+
+    </div>
+    <footer>
+        <p>&copy; 2024 - 2025 Sharealuxz - Transférez vos fichiers - <a href="#" id="privacy-link">Politique de
+                confidentialité</a>
+        </p>
+        <div class="stats-bar">
+            <span><i class="fas fa-users"></i> <span id="stat-users">0</span> connectés</span>
+            <span><i class="fas fa-file-upload"></i> <span id="stat-files">0</span> fichiers envoyés</span>
+            <span><i class="fas fa-database"></i> <span id="stat-gb">0.00</span> Go transférés</span>
+        </div>
+
+    </footer>
+
+    <!-- Modale Politique de confidentialité -->
+    <div id="privacy-modal" class="modal"
+        style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+        <div
+            style="background-color: var(--background-color); color: var(--text-color);max-width:600px;width:90vw;padding:2em 1.5em;border-radius:10px;box-shadow:0 2px 16px #0002;position:relative;">
+            <button id="close-privacy"
+                style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer; color: var(--text-color);">&times;</button>
+            <h2>Politique de confidentialité</h2>
+            <div style="max-height:60vh;overflow-y:auto;text-align:left;font-size:1em;">
+                <p><strong>1. Collecte de données :</strong> Sharealuxz ne collecte aucune donnée personnelle
+                    nominative. Les fichiers transférés ne sont jamais stockés sur nos serveurs, ils transitent
+                    uniquement entre l'expéditeur et le destinataire.</p>
+                <p><strong>2. Cookies :</strong> Seuls des cookies techniques sont utilisés pour le bon fonctionnement
+                    du service (ex : préférences de thème, état de connexion). Aucun cookie publicitaire ou de suivi
+                    n'est utilisé.</p>
+                <p><strong>3. Sécurité :</strong> Les transferts sont chiffrés pendant le transport. Nous mettons tout
+                    en œuvre pour garantir la sécurité de vos échanges, mais nous vous recommandons de ne pas partager
+                    d'informations sensibles sans précaution.</p>
+                <p><strong>4. Conservation :</strong> Aucun fichier n'est conservé sur nos serveurs. Les codes de
+                    transfert et informations techniques sont supprimés automatiquement après la fin du transfert ou
+                    expiration.</p>
+                <p><strong>5. Contact :</strong> Pour toute question concernant la confidentialité, contactez-nous à
+                    l'adresse : <a href="mailto:contact@codealuxz.fr">contact@codealuxz.fr</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>

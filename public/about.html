@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sharealuxz - Transfert de fichiers sécurisé et simple</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff754b;
+            --primary-hover: #ee9a3a;
+            --secondary-color: #f0f5ff;
+            --text-color: #141414;
+            --light-text: #313131;
+            --third-color: #f0f5ff;
+            --border-color: #e1e4e8;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --card-color: #ffffff;
+            --font-main: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --border-radius: 8px;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --background-color: #ededed;
+        }
+
+        /* Dark mode */
+        body.dark {
+            --primary-color: #ff754b;
+            --primary-hover: #ee9a3a;
+            --secondary-color: #484848;
+            --third-color: #c8c8c8;
+            --card-color: rgb(58, 58, 58);
+            --text-color: #cacaca;
+            --light-text: #ededed;
+            --border-color: #e1e4e8;
+            --background-color: #101010;
+        }
+
+        /* Reset pour la landing page */
+        body.landing {
+            padding-top: 80px;
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .landing .container {
+            position: static;
+            transform: none;
+            height: auto;
+            max-width: 100vw;
+            margin: 0 auto;
+            padding: 0 20px;
+            overflow: visible;
+        }
+
+        /* Header amélioré */
+        .landing header {
+            height: 100px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background: var(--background-color);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .landing .header-content {
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            justify-content: space-between;
+            padding: 0 20px;
+            width: 100vw;
+            margin: 0 0;
+        }
+
+        .landing .header-content .logo {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--primary-color), #ff736c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+            position: relative;
+            left: -15px;
+        }
+
+        .landing .nav-links {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .landing .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: var(--border-radius);
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .landing .nav-links a:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .landing .cta-btn {
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 117, 75, 0.2);
+        }
+
+        .landing .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 117, 75, 0.3);
+        }
+
+        #quick-code-input {
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+            padding: 10px 0px;
+            font-size: 1.2rem;
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        #quick-code-input:focus {
+            outline: none;
+        }
+
+        .landing .theme-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: all 0.3s ease-in-out;
+        }
+
+        .landing .theme-btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* Hero section améliorée */
+        .hero {
+            padding: 100px 0;
+            margin-top: -50px;
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="1" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 30px;
+            color: white;
+            line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero p {
+            font-size: 1.4rem;
+            color: white;
+            margin-bottom: 40px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 60px;
+        }
+
+        .hero-btn {
+            padding: 15px 35px;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .hero-btn.primary {
+            background: white;
+            color: var(--primary-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-btn.secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            border-radius: var(--border-radius);
+            min-width: 180px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .stat-item div:last-child {
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        /* Section Essayer */
+        .try-section {
+            position: relative;
+            z-index: 2;
+            padding: 80px 0;
+            background-color: var(--card-color);
+        }
+
+        .try-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .try-title {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .try-title h2 {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .try-title p {
+            font-size: 1.1rem;
+            color: var(--light-text);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .try-card {
+            background-color: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .try-card .tabs {
+            position: relative;
+            transform: none;
+            left: auto;
+            top: auto;
+            margin-bottom: 20px;
+        }
+
+        .try-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 40px 20px;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .try-upload-area:hover {
+            border-color: var(--primary-color);
+            background-color: var(--secondary-color);
+        }
+
+        .try-upload-area i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .upload-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+
+        .upload-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 80px 0;
+            background-color: var(--background-color);
+        }
+
+        .features .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .section-heading {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-heading h2 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            display: inline-block;
+            position: relative;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background-color: var(--card-color);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        /* How it works Section */
+        .how-it-works {
+            padding: 80px 0;
+            background-color: var(--card-color);
+        }
+
+        .steps {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .step {
+            background-color: var(--card-color);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            width: calc(33.333% - 20px);
+            min-width: 250px;
+            position: relative;
+            border-top: 3px solid var(--primary-color);
+        }
+
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Footer */
+        .landing footer {
+            background-color: #222;
+            color: white;
+            padding: 40px 0 20px;
+            position: static;
+            height: auto;
+            text-align: left !important;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .footer-about {
+            max-width: 300px;
+        }
+
+        .footer-logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-hover));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .footer-links h4 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .footer-links h4::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 3px;
+            background: var(--primary-color);
+            bottom: -8px;
+            left: 0;
+        }
+
+        .footer-links ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .landing .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2em;
+            margin-top: 20px;
+            color: var(--primary-color);
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            .landing .header-content {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 15px;
+            }
+
+            .landing .nav-links {
+                order: 3;
+                margin-top: 15px;
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .landing .logo {
+                order: 1;
+            }
+
+            .landing .theme-btn {
+                order: 2;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .stat-item {
+                width: 80%;
+            }
+
+            .step {
+                width: 100%;
+            }
+
+            .footer-content {
+                flex-direction: column;
+            }
+        }
+
+        #quick-connect-btn {
+            border-radius: 0 var(--border-radius) var(--border-radius) 0 !important;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--card-color);
+            color: var(--text-color);
+            max-width: 600px;
+            width: 90%;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 30px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+
+        /* Easter egg */
+        #tktcr {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: black;
+        }
+
+        #tktcr video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    </style>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5140484634474159"
+        crossorigin="anonymous"></script>
+</head>
+
+<body class="landing">
+    <div id="tktcr">
+        <video autoplay controls>
+            <source src="https://www.dropbox.com/s/7mgzjvg6g68ztbf/rick.mp4?raw=1" type="video/mp4">
+        </video>
+    </div>
+
+    <header>
+        <div class="container header-content">
+            <div class="logo">Sharealuxz</div>
+            <nav class="nav-links">
+                <a href="#features">Fonctionnalités</a>
+                <a href="#how-it-works">Comment ça marche</a>
+                <a href="send.html" class="cta-btn">Accéder à l'app</a>
+            </nav>
+            <button class="theme-btn" onclick="ChangeMode()">
+                <i class="fas fa-adjust"></i>
+            </button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Transférez vos fichiers<br>en toute simplicité</h1>
+            <p>Partagez instantanément vos fichiers sans limite de taille, sans compte et en toute sécurité.</p>
+
+            <div class="hero-actions">
+                <a href="send.html" class="hero-btn primary">Commencer un transfert</a>
+                <a href="#features" class="hero-btn secondary">En savoir plus</a>
+            </div>
+
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="stat-users">0</div>
+                    <div>Utilisateurs actifs</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="stat-files">0</div>
+                    <div>Fichiers partagés</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="stat-gb">0</div>
+                    <div>Go transférés</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="try-section" id="try-now">
+        <div class="container try-container">
+            <div class="try-title">
+                <h2>Essayez Sharealuxz</h2>
+                <p>Testez le transfert de fichiers en quelques secondes</p>
+            </div>
+            <div class="try-card">
+                <div class="tabs">
+                    <button class="tab-btn active l" data-tab="try-receive">Recevoir</button>
+                    <button class="tab-btn r" data-tab="try-send">Envoyer</button>
+                </div>
+
+                <div id="try-send" class="tab-content">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--primary-color);">Envoyer un fichier
+                    </h3>
+
+                    <div class="try-upload-area" id="quick-upload-area">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Glissez-déposez un fichier ici ou</p>
+
+                        <div class="upload-options">
+                            <label for="quick-file-input" class="upload-btn">Sélectionner un fichier</label>
+                            <input type="file" id="quick-file-input" hidden>
+                        </div>
+                    </div>
+
+                    <div class="quick-file-info" hidden>
+                        <div class="file-preview">
+                            <div class="preview-container">
+                                <!-- Aperçu des fichiers sera inséré ici -->
+                            </div>
+                            <div class="file-details">
+                                <span class="quick-file-name">Nom du fichier</span>
+                                <span class="quick-file-size">Taille</span>
+                            </div>
+                        </div>
+
+                        <div class="transfer-code" hidden>
+                            <span id="quick-transfer-code">--------</span>
+                            <button id="quick-copy-code-btn" title="Copier le code"><i class="fas fa-copy"></i></button>
+                        </div>
+
+                        <div class="quick-progress" hidden>
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
+                            </div>
+                            <div class="progress-info">
+                                <span class="progress-percentage">0%</span>
+                                <span class="progress-transferred">0 MB / 0 MB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="quick-start-send-btn" class="primary-btn" disabled>Envoyer</button>
+                        <button id="quick-cancel-btn" class="secondary-btn" hidden>Annuler</button>
+                        <a href="send.html" class="secondary-btn">Accéder à l'application complète</a>
+                    </div>
+                </div>
+
+                <div id="try-receive" class="tab-content active">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--primary-color);">Recevoir un
+                        fichier</h3>
+
+                    <div class="code-input-wrapper">
+                        <input type="text" id="quick-code-input" maxlength="8" placeholder="XXXXXXXX"
+                            inputmode="numeric" pattern="[0-9]*">
+                        <button id="quick-connect-btn" class="primary-btn">Connecter</button>
+                    </div>
+
+                    <div class="action-buttons">
+                        <a href="send.html" class="primary-btn">Accéder à l'application complète</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-heading">
+                <h2>Pourquoi Sharealuxz ?</h2>
+                <p>Un service conçu pour faciliter vos partages de fichiers</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Sécurisé</h3>
+                    <p>Transferts chiffrés de bout en bout. Aucun stockage permanent sur nos serveurs. Vos données
+                        restent privées.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>Rapide</h3>
+                    <p>Transmission directe entre utilisateurs pour des vitesses optimales, sans passer par des serveurs
+                        intermédiaires.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-unlock"></i>
+                    </div>
+                    <h3>Sans limite</h3>
+                    <p>Envoyez des fichiers de toute taille, sans restriction ni compression forcée.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-user-alt-slash"></i>
+                    </div>
+                    <h3>Anonyme</h3>
+                    <p>Aucune inscription ou compte requis. Partagez instantanément sans fournir d'informations
+                        personnelles.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <h3>Dossiers complets</h3>
+                    <p>Envoyez des dossiers entiers avec leur structure intacte, idéal pour partager des projets.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h3>Fiabilité</h3>
+                    <p>Système de transfert robuste avec une connexion sécurisée entre les appareils.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-heading">
+                <h2>Comment ça marche</h2>
+                <p>Trois étapes simples pour partager vos fichiers</p>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Sélectionnez vos fichiers</h3>
+                    <p>Glissez-déposez des fichiers ou des dossiers entiers dans l'interface. Tous types de contenus
+                        sont acceptés.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Partagez le code</h3>
+                    <p>Un code unique à 8 chiffres est généré. Partagez-le avec le destinataire ou envoyez un lien
+                        direct.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Transfert direct</h3>
+                    <p>Le destinataire entre le code et le transfert commence immédiatement, directement entre vos
+                        appareils.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-logo">Sharealuxz</div>
+                    <p>Transfert de fichiers simple, rapide et sécurisé. Sans inscription, sans limites, sans stockage.
+                    </p>
+                </div>
+                <div class="footer-links">
+                    <h4>Liens</h4>
+                    <ul>
+                        <li><a href="send.html">Application</a></li>
+                        <li><a href="#features">Fonctionnalités</a></li>
+                        <li><a href="#how-it-works">Comment ça marche</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Légal</h4>
+                    <ul>
+                        <li><a href="#" id="privacy-link">Politique de confidentialité</a></li>
+                        <li><a href="#" id="terms-link">Conditions d'utilisation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="mailto:contact@codealuxz.fr">contact@codealuxz.fr</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="stats-bar">
+                <span><i class="fas fa-users"></i> <span id="footer-stat-users">0</span> connectés</span>
+                <span><i class="fas fa-file-upload"></i> <span id="footer-stat-files">0</span> fichiers envoyés</span>
+                <span><i class="fas fa-database"></i> <span id="footer-stat-gb">0.00</span> Go transférés</span>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Sharealuxz - Transférez vos fichiers</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modale Politique de confidentialité -->
+    <div id="privacy-modal" class="modal">
+        <div class="modal-content">
+            <button id="close-privacy" class="close-btn">&times;</button>
+            <h2>Politique de confidentialité</h2>
+            <div style="max-height:60vh;overflow-y:auto;text-align:left;font-size:1em;">
+                <p><strong>1. Collecte de données :</strong> Sharealuxz ne collecte aucune donnée personnelle
+                    nominative. Les fichiers transférés ne sont jamais stockés sur nos serveurs, ils transitent
+                    uniquement entre l'expéditeur et le destinataire.</p>
+                <p><strong>2. Cookies :</strong> Seuls des cookies techniques sont utilisés pour le bon fonctionnement
+                    du service (ex : préférences de thème, état de connexion). Aucun cookie publicitaire ou de suivi
+                    n'est utilisé.</p>
+                <p><strong>3. Sécurité :</strong> Les transferts sont chiffrés pendant le transport. Nous mettons tout
+                    en œuvre pour garantir la sécurité de vos échanges, mais nous vous recommandons de ne pas partager
+                    d'informations sensibles sans précaution.</p>
+                <p><strong>4. Conservation :</strong> Aucun fichier n'est conservé sur nos serveurs. Les codes de
+                    transfert et informations techniques sont supprimés automatiquement après la fin du transfert ou
+                    expiration.</p>
+                <p><strong>5. Contact :</strong> Pour toute question concernant la confidentialité, contactez-nous à
+                    l'adresse : <a href="mailto:contact@codealuxz.fr">contact@codealuxz.fr</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Conditions d'utilisation -->
+    <div id="terms-modal" class="modal">
+        <div class="modal-content">
+            <button id="close-terms" class="close-btn">&times;</button>
+            <h2>Conditions d'utilisation</h2>
+            <div style="max-height:60vh;overflow-y:auto;text-align:left;font-size:1em;">
+                <p><strong>1. Utilisation du service :</strong> Sharealuxz est un service de transfert de fichiers entre
+                    particuliers. Vous acceptez d'utiliser ce service conformément aux lois en vigueur et de ne pas
+                    l'utiliser à des fins illégales.</p>
+                <p><strong>2. Responsabilité :</strong> Les utilisateurs sont entièrement responsables du contenu qu'ils
+                    partagent. Sharealuxz ne peut être tenu responsable des fichiers échangés via son service.</p>
+                <p><strong>3. Disponibilité :</strong> Nous nous efforçons de maintenir le service disponible en
+                    permanence, mais ne pouvons garantir un fonctionnement sans interruption.</p>
+                <p><strong>4. Propriété intellectuelle :</strong> Vous vous engagez à ne pas transférer des contenus
+                    protégés par des droits d'auteur sans autorisation.</p>
+                <p><strong>5. Modifications :</strong> Nous nous réservons le droit de modifier ou interrompre le
+                    service à tout moment.</p>
+                <p><strong>6. Limitation de garantie :</strong> Le service est fourni "tel quel", sans garantie d'aucune
+                    sorte.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Gestion des modales
+            function setupModal(linkId, modalId, closeId) {
+                const link = document.getElementById(linkId);
+                const modal = document.getElementById(modalId);
+                const closeBtn = document.getElementById(closeId);
+
+                if (link && modal && closeBtn) {
+                    link.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        modal.style.display = 'flex';
+                    });
+                    closeBtn.addEventListener('click', function () {
+                        modal.style.display = 'none';
+                    });
+                    modal.addEventListener('click', function (e) {
+                        if (e.target === modal) modal.style.display = 'none';
+                    });
+                }
+            }
+
+            setupModal('privacy-link', 'privacy-modal', 'close-privacy');
+            setupModal('terms-link', 'terms-modal', 'close-terms');
+
+            // Gestion des onglets
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+
+                    btn.classList.add('active');
+                    const tabId = btn.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // Gestion du mode sombre
+            const mode = localStorage.getItem('mode') || 'light';
+            if (mode === "dark") {
+                document.body.classList.add('dark');
+            }
+
+            // Connexion au socket
+            const socket = io();
+
+            // Fonction pour mettre à jour les stats
+            function updateStats(stats) {
+                if (stats.activeUsers !== undefined) {
+                    document.querySelectorAll('[id^="stat-users"]').forEach(el => {
+                        el.textContent = stats.activeUsers;
+                    });
+                    document.querySelectorAll('[id^="footer-stat-users"]').forEach(el => {
+                        el.textContent = stats.activeUsers;
+                    });
+                }
+                if (stats.totalFiles !== undefined) {
+                    document.querySelectorAll('[id^="stat-files"]').forEach(el => {
+                        el.textContent = stats.totalFiles;
+                    });
+                    document.querySelectorAll('[id^="footer-stat-files"]').forEach(el => {
+                        el.textContent = stats.totalFiles;
+                    });
+                }
+                if (stats.totalGB !== undefined) {
+                    document.querySelectorAll('[id^="stat-gb"]').forEach(el => {
+                        el.textContent = stats.totalGB;
+                    });
+                    document.querySelectorAll('[id^="footer-stat-gb"]').forEach(el => {
+                        el.textContent = stats.totalGB;
+                    });
+                }
+            }
+
+            // Écoute l'événement stats-update du serveur
+            socket.on('stats-update', updateStats);
+
+            // Récupère les stats au chargement de la page
+            fetch('/stats')
+                .then(r => r.json())
+                .then(updateStats)
+                .catch(() => { });
+
+            // Gestion de l'upload rapide
+            const quickFileInput = document.getElementById('quick-file-input');
+            const quickUploadArea = document.getElementById('quick-upload-area');
+            const quickFileInfo = document.querySelector('.quick-file-info');
+            const quickFileName = document.querySelector('.quick-file-name');
+            const quickFileSize = document.querySelector('.quick-file-size');
+            const quickStartSendBtn = document.getElementById('quick-start-send-btn');
+            const quickCancelBtn = document.getElementById('quick-cancel-btn');
+            const quickTransferCode = document.getElementById('quick-transfer-code');
+            const quickCopyCodeBtn = document.getElementById('quick-copy-code-btn');
+            const quickProgress = document.querySelector('.quick-progress');
+            const quickProgressBar = quickProgress.querySelector('.progress-fill');
+            const quickProgressPercentage = quickProgress.querySelector('.progress-percentage');
+            const quickProgressTransferred = quickProgress.querySelector('.progress-transferred');
+
+            let quickSelectedFile = null;
+
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            quickFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleQuickFileSelection(e.target.files[0]);
+                }
+            });
+
+            quickUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                quickUploadArea.classList.add('active');
+            });
+
+            quickUploadArea.addEventListener('dragleave', () => {
+                quickUploadArea.classList.remove('active');
+            });
+
+            quickUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                quickUploadArea.classList.remove('active');
+                if (e.dataTransfer.files.length > 0) {
+                    handleQuickFileSelection(e.dataTransfer.files[0]);
+                }
+            });
+
+            function handleQuickFileSelection(file) {
+                quickSelectedFile = file;
+                quickFileName.textContent = file.name;
+                quickFileSize.textContent = formatFileSize(file.size);
+                quickUploadArea.hidden = true;
+                quickFileInfo.hidden = false;
+                quickStartSendBtn.disabled = false;
+                quickCancelBtn.hidden = false;
+            }
+
+            quickStartSendBtn.addEventListener('click', () => {
+                if (!quickSelectedFile) return;
+
+                socket.emit('generate-code', (code) => {
+                    quickTransferCode.textContent = code;
+                    quickTransferCode.parentElement.hidden = false;
+                    quickProgress.hidden = false;
+                    quickStartSendBtn.hidden = true;
+                });
+            });
+
+            quickCancelBtn.addEventListener('click', () => {
+                quickSelectedFile = null;
+                quickUploadArea.hidden = false;
+                quickFileInfo.hidden = true;
+                quickStartSendBtn.disabled = true;
+                quickCancelBtn.hidden = true;
+                quickTransferCode.parentElement.hidden = true;
+                quickProgress.hidden = true;
+                quickStartSendBtn.hidden = false;
+                quickProgressBar.style.width = '0%';
+                quickProgressPercentage.textContent = '0%';
+                quickProgressTransferred.textContent = '0 MB / 0 MB';
+            });
+
+            quickCopyCodeBtn.addEventListener('click', () => {
+                const code = quickTransferCode.textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    quickCopyCodeBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => {
+                        quickCopyCodeBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                    }, 2000);
+                });
+            });
+
+            // Gestion des événements socket pour l'upload rapide
+            socket.on('receiver-connected', (data) => {
+                if (quickSelectedFile) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const fileData = {
+                            name: quickSelectedFile.name,
+                            size: quickSelectedFile.size,
+                            type: quickSelectedFile.type,
+                            data: e.target.result
+                        };
+
+                        socket.emit('file-transfer-start', {
+                            receiverId: data.receiverId,
+                            ...fileData
+                        });
+                    };
+                    reader.readAsArrayBuffer(quickSelectedFile);
+                }
+            });
+
+            socket.on('transfer-progress', (data) => {
+                if (quickProgress && !quickProgress.hidden) {
+                    const progress = Math.round(data.progress);
+                    quickProgressBar.style.width = progress + '%';
+                    quickProgressPercentage.textContent = progress + '%';
+                    quickProgressTransferred.textContent = `${formatFileSize(data.transferred)} / ${formatFileSize(data.total)}`;
+                }
+            });
+
+            socket.on('transfer-complete', () => {
+                if (quickProgress && !quickProgress.hidden) {
+                    quickProgressBar.style.width = '100%';
+                    quickProgressPercentage.textContent = '100%';
+                    setTimeout(() => {
+                        quickCancelBtn.click();
+                    }, 2000);
+                }
+            });
+        });
+
+        // Fonction pour changer de mode (sombre/clair)
+        function ChangeMode() {
+            const body = document.body;
+            if (body.classList.contains('dark')) {
+                body.classList.remove('dark');
+                localStorage.setItem('mode', 'light');
+            } else {
+                body.classList.add('dark');
+                localStorage.setItem('mode', 'dark');
+            }
+        }
+    </script>
+</body>
+
+</html>
