@@ -292,8 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const zipModal = document.getElementById('zip-content-modal');
             const zipContentList = document.getElementById('zip-content-list');
             const confirmBtn = document.getElementById('confirm-download-zip');
-            const cancelBtn = document.getElementById('cancel-download-zip');
-            const closeBtn = document.getElementById('close-zip-modal');
+                        const closeBtn = document.getElementById('close-zip-modal');
 
             try {
                 // Lire le contenu du ZIP
@@ -378,13 +377,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const cleanup = () => {
                     confirmBtn.removeEventListener('click', handleConfirm);
-                    cancelBtn.removeEventListener('click', handleCancel);
                     closeBtn.removeEventListener('click', handleCancel);
                     zipModal.style.display = 'none';
                 };
 
                 confirmBtn.addEventListener('click', handleConfirm);
-                cancelBtn.addEventListener('click', handleCancel);
                 closeBtn.addEventListener('click', handleCancel);
 
             } catch (error) {
@@ -399,13 +396,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const handleClose = () => {
                     closeBtn.removeEventListener('click', handleClose);
-                    cancelBtn.removeEventListener('click', handleClose);
                     zipModal.style.display = 'none';
                     resolve(false);
                 };
 
                 closeBtn.addEventListener('click', handleClose);
-                cancelBtn.addEventListener('click', handleClose);
             }
         });
     }
