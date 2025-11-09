@@ -3,6 +3,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 const { nanoid } = require('nanoid');
 const fs = require('fs');
@@ -25,6 +26,56 @@ const io = new Server(server, {
 });
 
 app.use(cors());
+
+// Configuration des en-têtes de sécurité avec Helmet
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: [
+                "'self'",
+                "'unsafe-inline'", // Nécessaire pour les scripts inline
+                "'unsafe-hashes'", // Nécessaire pour les event handlers inline
+                "https://cdnjs.cloudflare.com",
+                "https://pagead2.googlesyndication.com",
+                "https://adservice.google.com",
+                "https://googleads.g.doubleclick.net",
+                "https://www.googletagservices.com",
+                "https://ep2.adtrafficquality.google",
+                "https://cdn.socket.io"
+            ],
+            scriptSrcAttr: ["'unsafe-inline'", "'unsafe-hashes'"],
+            styleSrc: [
+                "'self'",
+                "'unsafe-inline'", // Nécessaire pour les styles inline
+                "https://cdnjs.cloudflare.com"
+            ],
+            fontSrc: [
+                "'self'",
+                "https://cdnjs.cloudflare.com"
+            ],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'", "wss:", "ws:", "https:"],
+            mediaSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            frameSrc: ["'self'", "https://pagead2.googlesyndication.com", "https://googleads.g.doubleclick.net"],
+            baseUri: ["'self'"],
+            formAction: ["'self'"],
+            frameAncestors: ["'self'"],
+            upgradeInsecureRequests: []
+        }
+    },
+    strictTransportSecurity: {
+        maxAge: 31536000, // 1 an
+        includeSubDomains: true,
+        preload: true
+    },
+    xContentTypeOptions: true, // nosniff
+    xFrameOptions: { action: 'sameorigin' },
+    xXssProtection: true,
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+}));
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 

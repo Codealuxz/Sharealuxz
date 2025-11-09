@@ -1,22 +1,58 @@
+// Variable globale pour le mode dark/light
+var mode = localStorage.getItem('mode') || 'light';
+
 document.addEventListener('DOMContentLoaded', () => {
 
-    
+    // Vérifier si l'utilisateur a accepté les conditions
+    const hasAcceptedTerms = localStorage.getItem('sharealuxz_terms_accepted');
+    const termsModal = document.getElementById('terms-modal');
+    const acceptTermsBtn = document.getElementById('accept-terms');
+    const declineTermsBtn = document.getElementById('decline-terms');
+    const termsPrivacyLink = document.getElementById('terms-privacy-link');
+
+    // Afficher la popup si les conditions n'ont pas été acceptées
+    if (!hasAcceptedTerms) {
+        termsModal.style.display = 'flex';
+
+        // Bloquer l'utilisation du site tant que non accepté
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Gérer l'acceptation
+    acceptTermsBtn.addEventListener('click', () => {
+        localStorage.setItem('sharealuxz_terms_accepted', 'true');
+        termsModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    });
+
+    // Gérer le refus
+    declineTermsBtn.addEventListener('click', () => {
+        alert('Vous devez accepter les conditions d\'utilisation pour utiliser ce service.');
+    });
+
+    // Ouvrir la politique de confidentialité depuis la popup des conditions
+    termsPrivacyLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('privacy-modal').style.display = 'flex';
+    });
+
+
     setTimeout(() => {
-        
+
         const urlParams = new URLSearchParams(window.location.search);
         const codeFromUrl = urlParams.get('code');
 
         if (codeFromUrl) {
-            
+
             document.querySelector('.tab-btn[data-tab="receive"]').click();
 
-            
-            document.getElementById('code-input').value = codeFromUrl;
 
-            
+            setCodeValue(codeFromUrl);
+
+
             document.getElementById('connect-btn').click();
         }
-        
+
     }, 1000); 
 
     const socket = io({
@@ -49,8 +85,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const transferStatus = document.querySelector('.transfer-status');
     const connectionStatus = document.querySelector('.connection-status');
     const shareLinkBtn = document.getElementById('share-link-btn');
+    const qrCodeBtn = document.getElementById('qr-code-btn');
+    const qrModal = document.getElementById('qr-modal');
+    const closeQrBtn = document.getElementById('close-qr');
 
-    const codeInput = document.getElementById('code-input');
+    const codeDigits = document.querySelectorAll('.code-digit');
     const connectBtn = document.getElementById('connect-btn');
     const receiveStatus = document.querySelector('.receive-status');
     const fileInfoReceive = document.querySelector('.file-info-receive');
@@ -65,6 +104,77 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressPercentages = document.querySelectorAll('.progress-percentage');
     const progressTransferred = document.querySelectorAll('.progress-transferred');
 
+    // Gestion des cases de code
+    function getCodeValue() {
+        return Array.from(codeDigits).map(input => input.value).join('');
+    }
+
+    function setCodeValue(code) {
+        const digits = code.toString().padStart(8, '0').split('');
+        codeDigits.forEach((input, index) => {
+            input.value = digits[index] || '';
+        });
+    }
+
+    // Navigation entre les cases
+    codeDigits.forEach((input, index) => {
+        input.addEventListener('input', (e) => {
+            const value = e.target.value;
+
+            // Autoriser uniquement les chiffres
+            if (!/^\d*$/.test(value)) {
+                e.target.value = '';
+                return;
+            }
+
+            // Si on a saisi un chiffre, passer à la case suivante
+            if (value && index < codeDigits.length - 1) {
+                codeDigits[index + 1].focus();
+            }
+
+            // Auto-submit si tous les chiffres sont remplis
+            if (index === codeDigits.length - 1 && value) {
+                const code = getCodeValue();
+                if (code.length === 8) {
+                    setTimeout(() => connectBtn.click(), 100);
+                }
+            }
+        });
+
+        input.addEventListener('keydown', (e) => {
+            // Backspace : effacer et retourner à la case précédente
+            if (e.key === 'Backspace' && !input.value && index > 0) {
+                codeDigits[index - 1].focus();
+                codeDigits[index - 1].value = '';
+            }
+
+            // Flèche gauche : case précédente
+            if (e.key === 'ArrowLeft' && index > 0) {
+                codeDigits[index - 1].focus();
+            }
+
+            // Flèche droite : case suivante
+            if (e.key === 'ArrowRight' && index < codeDigits.length - 1) {
+                codeDigits[index + 1].focus();
+            }
+        });
+
+        // Sélectionner le contenu au focus
+        input.addEventListener('focus', () => {
+            input.select();
+        });
+
+        // Support du copier-coller
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 8);
+            setCodeValue(pastedData);
+            if (pastedData.length === 8) {
+                codeDigits[7].focus();
+            }
+        });
+    });
+
     let selectedFiles = [];
     let isFolder = false;
     let totalSize = 0;
@@ -73,20 +183,300 @@ document.addEventListener('DOMContentLoaded', () => {
     let fileBuffer = [];
     let receivedSize = 0;
     let fileBlob = null;
-    const CHUNK_SIZE = 1024 * 1024; 
-    const MAX_PARALLEL_CHUNKS = 6; 
+    const CHUNK_SIZE = 1024 * 1024;
+    const MAX_PARALLEL_CHUNKS = 6;
 
-    
+
     let downloadStartTime = 0;
     let downloadLastUpdate = 0;
     let downloadSpeeds = [];
     let downloadTimeElement = null;
 
-    
+
     let wasDisconnected = false;
     let disconnectionTime = 0;
 
-    var mode = localStorage.getItem('mode') || 'light';
+    // Variable pour suivre si un transfert est en cours
+    let isTransferActive = false;
+
+    // Protection contre la fermeture de la page pendant un transfert
+    window.addEventListener('beforeunload', function(e) {
+        if (isTransferActive) {
+            e.preventDefault();
+            e.returnValue = 'Un transfert est en cours. Si vous quittez maintenant, le transfert sera interrompu.';
+            return e.returnValue;
+        }
+    });
+
+    // Fonction pour afficher/masquer la notification de transfert actif
+    function showTransferWarning(show = true) {
+        let warningBanner = document.getElementById('transfer-warning-banner');
+
+        if (show) {
+            if (!warningBanner) {
+                warningBanner = document.createElement('div');
+                warningBanner.id = 'transfer-warning-banner';
+                warningBanner.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    background: linear-gradient(135deg, #ff754b, #ee9a3a);
+                    color: white;
+                    padding: 0.75rem 1rem;
+                    text-align: center;
+                    font-weight: 600;
+                    z-index: 10000;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.5rem;
+                    animation: slideDown 0.3s ease;
+                `;
+                warningBanner.innerHTML = `
+                    <i class="fas fa-exclamation-triangle" style="font-size: 1.2em;"></i>
+                    <span>Transfert en cours - Ne quittez pas cette page pour que l'autre reçoive le fichier</span>
+                `;
+                document.body.appendChild(warningBanner);
+
+                // Ajouter du padding au body pour compenser la bannière
+                document.body.style.paddingTop = '48px';
+            }
+            warningBanner.style.display = 'flex';
+        } else {
+            if (warningBanner) {
+                warningBanner.style.display = 'none';
+                document.body.style.paddingTop = '0';
+            }
+        }
+    }
+
+    // Extensions de fichiers potentiellement dangereux
+    const DANGEROUS_EXTENSIONS = [
+        '.exe', '.msi', '.app', '.deb', '.rpm', '.dmg',
+        '.bat', '.cmd', '.sh', '.ps1', '.vbs', '.js', '.jar',
+        '.php', '.jsp', '.asp', '.aspx', '.py', '.rb', '.pl',
+        '.scr', '.com', '.pif', '.reg', '.vb',
+        '.docm', '.xlsm', '.pptm', '.dotm', '.xltm'
+    ];
+
+    function getFileExtension(filename) {
+        const lastDot = filename.lastIndexOf('.');
+        return lastDot !== -1 ? filename.slice(lastDot).toLowerCase() : '';
+    }
+
+    function isDangerousFile(filename) {
+        const ext = getFileExtension(filename);
+        return DANGEROUS_EXTENSIONS.includes(ext);
+    }
+
+    // Fonction pour supprimer le paramètre code de l'URL
+    function removeCodeFromUrl() {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('code')) {
+            url.searchParams.delete('code');
+            window.history.replaceState({}, '', url.pathname + url.search);
+        }
+    }
+
+    // Fonction pour vérifier si c'est un fichier ZIP
+    function isZipFile(filename) {
+        const ext = getFileExtension(filename);
+        return ext === '.zip';
+    }
+
+    // Fonction pour afficher le contenu d'un ZIP
+    async function showZipContent(blob, filename) {
+        return new Promise(async (resolve) => {
+            const zipModal = document.getElementById('zip-content-modal');
+            const zipContentList = document.getElementById('zip-content-list');
+            const confirmBtn = document.getElementById('confirm-download-zip');
+            const cancelBtn = document.getElementById('cancel-download-zip');
+            const closeBtn = document.getElementById('close-zip-modal');
+
+            try {
+                // Lire le contenu du ZIP
+                const zip = await JSZip.loadAsync(blob);
+
+                // Créer la liste des fichiers
+                let fileList = '<div style="font-size:0.9em;">';
+                let fileCount = 0;
+                let totalSize = 0;
+                let dangerousFiles = [];
+
+                // Parcourir tous les fichiers du ZIP
+                for (const [path, zipEntry] of Object.entries(zip.files)) {
+                    if (!zipEntry.dir) {
+                        fileCount++;
+                        totalSize += zipEntry._data ? zipEntry._data.uncompressedSize : 0;
+
+                        const icon = getFileIcon(path);
+                        const size = formatFileSize(zipEntry._data ? zipEntry._data.uncompressedSize : 0);
+                        const isDangerous = isDangerousFile(path);
+
+                        if (isDangerous) {
+                            dangerousFiles.push(path);
+                        }
+
+                        const warningBadge = isDangerous ? '<span style="background:var(--error-color);color:white;padding:0.2em 0.5em;border-radius:4px;font-size:0.75em;margin-left:0.5em;">DANGER</span>' : '';
+
+                        fileList += `
+                            <div style="display:flex;align-items:center;gap:0.8rem;padding:0.6rem;border-bottom:1px solid var(--border-color);${isDangerous ? 'background:rgba(255,0,0,0.05);' : ''}">
+                                <i class="fas ${icon}" style="color:${isDangerous ? 'var(--error-color)' : 'var(--primary-color)'};width:20px;"></i>
+                                <div style="flex:1;min-width:0;">
+                                    <div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;${isDangerous ? 'color:var(--error-color);' : ''}">${path}${warningBadge}</div>
+                                    <div style="font-size:0.85em;color:var(--light-text);">${size}</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                fileList += '</div>';
+
+                // Ajouter un avertissement si fichiers dangereux
+                let warningSection = '';
+                if (dangerousFiles.length > 0) {
+                    warningSection = `
+                        <div style="background:rgba(255,0,0,0.1);border:2px solid var(--error-color);padding:1rem;border-radius:8px;margin-bottom:1rem;">
+                            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;">
+                                <i class="fas fa-exclamation-triangle" style="color:var(--error-color);font-size:1.2em;"></i>
+                                <div style="font-weight:600;color:var(--error-color);">ATTENTION : Fichiers dangereux détectés</div>
+                            </div>
+                            <div style="font-size:0.9em;color:var(--text-color);">
+                                Cette archive contient ${dangerousFiles.length} fichier(s) potentiellement dangereux (${dangerousFiles.slice(0, 3).join(', ')}${dangerousFiles.length > 3 ? '...' : ''}).
+                                <br><strong>N'exécutez ces fichiers que si vous faites confiance à la source.</strong>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Ajouter un résumé en haut
+                const summary = `
+                    <div style="background:var(--background-color);padding:1rem;border-radius:8px;margin-bottom:1rem;text-align:center;">
+                        <div style="font-size:1.1em;font-weight:600;color:var(--primary-color);margin-bottom:0.5rem;">${filename}</div>
+                        <div style="font-size:0.9em;color:var(--light-text);">
+                            <i class="fas fa-file-archive"></i> ${fileCount} fichier(s) - ${formatFileSize(totalSize)} au total
+                        </div>
+                    </div>
+                `;
+
+                zipContentList.innerHTML = summary + warningSection + fileList;
+                zipModal.style.display = 'flex';
+
+                // Gestion des événements
+                const handleConfirm = () => {
+                    cleanup();
+                    resolve(true);
+                };
+
+                const handleCancel = () => {
+                    cleanup();
+                    resolve(false);
+                };
+
+                const cleanup = () => {
+                    confirmBtn.removeEventListener('click', handleConfirm);
+                    cancelBtn.removeEventListener('click', handleCancel);
+                    closeBtn.removeEventListener('click', handleCancel);
+                    zipModal.style.display = 'none';
+                };
+
+                confirmBtn.addEventListener('click', handleConfirm);
+                cancelBtn.addEventListener('click', handleCancel);
+                closeBtn.addEventListener('click', handleCancel);
+
+            } catch (error) {
+                console.error('Erreur lors de la lecture du ZIP:', error);
+                zipContentList.innerHTML = `
+                    <div style="text-align:center;color:var(--error-color);padding:2rem;">
+                        <i class="fas fa-exclamation-triangle" style="font-size:2em;margin-bottom:1rem;"></i>
+                        <div>Impossible de lire le contenu de l'archive</div>
+                    </div>
+                `;
+                zipModal.style.display = 'flex';
+
+                const handleClose = () => {
+                    closeBtn.removeEventListener('click', handleClose);
+                    cancelBtn.removeEventListener('click', handleClose);
+                    zipModal.style.display = 'none';
+                    resolve(false);
+                };
+
+                closeBtn.addEventListener('click', handleClose);
+                cancelBtn.addEventListener('click', handleClose);
+            }
+        });
+    }
+
+    // Fonction pour obtenir l'icône appropriée selon l'extension
+    function getFileIcon(filename) {
+        const ext = getFileExtension(filename);
+        const iconMap = {
+            '.pdf': 'fa-file-pdf',
+            '.doc': 'fa-file-word', '.docx': 'fa-file-word',
+            '.xls': 'fa-file-excel', '.xlsx': 'fa-file-excel',
+            '.ppt': 'fa-file-powerpoint', '.pptx': 'fa-file-powerpoint',
+            '.zip': 'fa-file-archive', '.rar': 'fa-file-archive', '.7z': 'fa-file-archive',
+            '.jpg': 'fa-file-image', '.jpeg': 'fa-file-image', '.png': 'fa-file-image', '.gif': 'fa-file-image',
+            '.mp4': 'fa-file-video', '.avi': 'fa-file-video', '.mov': 'fa-file-video',
+            '.mp3': 'fa-file-audio', '.wav': 'fa-file-audio',
+            '.txt': 'fa-file-alt', '.md': 'fa-file-alt',
+            '.js': 'fa-file-code', '.html': 'fa-file-code', '.css': 'fa-file-code', '.php': 'fa-file-code',
+        };
+        return iconMap[ext] || 'fa-file';
+    }
+
+    // Fonction pour formater la taille de fichier
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    function showFileWarning(filename, fileSize, onAccept, onCancel) {
+        return new Promise((resolve) => {
+            const ext = getFileExtension(filename);
+
+            const modal = document.createElement('div');
+            modal.className = 'file-warning-modal';
+            modal.innerHTML = `
+                <div class="file-warning-content">
+                    <div class="file-warning-icon">⚠️</div>
+                    <div class="file-warning-title">Fichier potentiellement dangereux</div>
+                    <div class="file-warning-details">
+                        <strong>Fichier :</strong> ${filename}<br>
+                        <strong>Taille :</strong> ${fileSize}<br>
+                        <strong>Extension :</strong> ${ext}
+                    </div>
+                    <div class="file-warning-message">
+                        Ce type de fichier peut contenir des virus ou malwares. Ne téléchargez que si vous faites confiance à l'expéditeur.
+                    </div>
+                    <div class="file-warning-buttons">
+                        <button class="file-warning-cancel">Annuler</button>
+                        <button class="file-warning-accept">Continuer</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            modal.querySelector('.file-warning-accept').onclick = () => {
+                document.body.removeChild(modal);
+                resolve(true);
+                if (onAccept) onAccept();
+            };
+
+            modal.querySelector('.file-warning-cancel').onclick = () => {
+                document.body.removeChild(modal);
+                resolve(false);
+                if (onCancel) onCancel();
+            };
+        });
+    }
 
     function formatFileSize(bytes) {
         if (bytes === 0) return '0 Bytes';
@@ -113,6 +503,10 @@ document.addEventListener('DOMContentLoaded', () => {
         progressTransferred[0].textContent = '0 MB / 0 MB';
         progressContainers[0].hidden = true;
         previewContainer.innerHTML = '';
+
+        // Désactiver la protection de fermeture de page
+        isTransferActive = false;
+        showTransferWarning(false);
     }
 
     function resetReceiveUI() {
@@ -121,8 +515,10 @@ document.addEventListener('DOMContentLoaded', () => {
         acceptReceiveBtn.hidden = true;
         cancelReceiveBtn.hidden = true;
         downloadBtn.hidden = true;
-        codeInput.value = '';
-        codeInput.disabled = false;
+        codeDigits.forEach(input => {
+            input.value = '';
+            input.disabled = false;
+        });
         connectBtn.disabled = false;
         progressBars[1].style.width = '0%';
         progressPercentages[1].textContent = '0%';
@@ -133,8 +529,12 @@ document.addEventListener('DOMContentLoaded', () => {
         receivedSize = 0;
         fileBlob = null;
 
-        
+
         resetDownloadTimeDisplay();
+
+        // Désactiver la protection de fermeture de page
+        isTransferActive = false;
+        showTransferWarning(false);
     }
 
     tabBtns.forEach(btn => {
@@ -515,19 +915,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    codeInput.addEventListener('input', (e) => {
-        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    // Bouton QR Code
+    let qrCodeInstance = null;
+    qrCodeBtn.addEventListener('click', () => {
+        const code = transferCode.textContent;
+        const currentUrl = window.location.origin + window.location.pathname;
+        const shareUrl = `${currentUrl}?code=${code}`;
+
+        // Vider le conteneur QR code
+        const qrcodeContainer = document.getElementById('qrcode');
+        qrcodeContainer.innerHTML = '';
+
+        // Générer le QR code
+        qrCodeInstance = new QRCode(qrcodeContainer, {
+            text: shareUrl,
+            width: 256,
+            height: 256,
+            colorDark: getComputedStyle(document.documentElement).getPropertyValue('--text-color').trim() || '#000000',
+            colorLight: getComputedStyle(document.documentElement).getPropertyValue('--card-color').trim() || '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+
+        // Afficher la modal
+        qrModal.style.display = 'flex';
+    });
+
+    // Fermer la modal QR code
+    closeQrBtn.addEventListener('click', () => {
+        qrModal.style.display = 'none';
+    });
+
+    // Fermer en cliquant en dehors
+    qrModal.addEventListener('click', (e) => {
+        if (e.target === qrModal) {
+            qrModal.style.display = 'none';
+        }
     });
 
     connectBtn.addEventListener('click', () => {
-        if (codeInput.value == '00000000') {
+        const code = getCodeValue();
+
+        if (code == '00000000') {
             rickroll()
         }
-        const code = codeInput.value.trim();
+
         if (code.length === 8 && /^\d+$/.test(code)) {
             socket.emit('connect-with-code', code);
             receiveStatus.hidden = false;
-            codeInput.disabled = true;
+            codeDigits.forEach(input => input.disabled = true);
             connectBtn.disabled = true;
         } else if (code.length !== 8) {
             receiveStatus.hidden = false;
@@ -557,13 +992,33 @@ document.addEventListener('DOMContentLoaded', () => {
         resetReceiveUI();
     });
 
-    downloadBtn.addEventListener('click', () => {
+    downloadBtn.addEventListener('click', async () => {
         if (!fileBlob) return;
+
+        const filename = incomingFileName.textContent;
+        const fileSize = incomingFileSize.textContent;
+
+        // Vérifier si c'est un fichier ZIP et afficher son contenu
+        if (isZipFile(filename)) {
+            const userAccepted = await showZipContent(fileBlob, filename);
+            if (!userAccepted) {
+                console.log('Téléchargement du ZIP annulé par l\'utilisateur');
+                return;
+            }
+        }
+        // Vérifier si le fichier est potentiellement dangereux
+        else if (isDangerousFile(filename)) {
+            const userAccepted = await showFileWarning(filename, fileSize);
+            if (!userAccepted) {
+                console.log('Téléchargement annulé par l\'utilisateur');
+                return;
+            }
+        }
 
         const url = URL.createObjectURL(fileBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = incomingFileName.textContent;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -611,12 +1066,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('code-generated', (code) => {
         transferCode.textContent = code;
+        isTransferActive = true;
+        showTransferWarning(true);
     });
 
     socket.on('code-expired', (code) => {
         if (transferCode.textContent === code) {
             connectionStatus.className = 'connection-status error';
-            connectionStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i><span>Code expiré. Veuillez recommencer.</span>';
+            connectionStatus.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Code expiré après 10 minutes.</span>
+                <button id="regenerate-code-btn" class="secondary-btn" style="margin-top:0.5em;">Générer un nouveau code</button>
+            `;
+
+            // Supprimer le paramètre code de l'URL si présent
+            removeCodeFromUrl();
+
+            // Ajouter l'événement pour régénérer le code
+            document.getElementById('regenerate-code-btn').addEventListener('click', () => {
+                // Masquer le message d'expiration
+                connectionStatus.className = 'connection-status waiting';
+                connectionStatus.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i><span>Génération d\'un nouveau code...</span>';
+
+                // Demander un nouveau code
+                socket.emit('generate-code');
+            });
         }
     });
 
@@ -755,6 +1229,7 @@ document.addEventListener('DOMContentLoaded', () => {
         senderConnection = data.senderId;
         document.querySelector('.receive-status .connection-status').className = 'connection-status success';
         document.querySelector('.receive-status .connection-status').innerHTML = '<i class="fas fa-check-circle"></i><span>Connexion établie!</span>';
+        isTransferActive = true;
     });
 
     socket.on('file-transfer-start', (data) => {
@@ -1175,19 +1650,26 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.receive-status .connection-status').innerHTML =
             '<i class="fas fa-check-circle"></i><span>Transfert terminé avec succès!</span>';
 
-        
+
         if (data.transferId) {
             localStorage.removeItem('sharealuxz_receive_' + data.transferId);
         }
 
-        
+
         resetDownloadTimeDisplay();
+
+        // Désactiver la protection de fermeture de page
+        isTransferActive = false;
+        showTransferWarning(false);
     });
 
     socket.on('connection-error', (message) => {
         document.querySelector('.receive-status .connection-status').className = 'connection-status error';
         document.querySelector('.receive-status .connection-status').innerHTML =
             `<i class="fas fa-exclamation-circle"></i><span>${message}</span>`;
+
+        // Supprimer le paramètre code de l'URL si présent
+        removeCodeFromUrl();
 
         setTimeout(resetReceiveUI, 3000);
     });

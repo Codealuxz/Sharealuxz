@@ -108,6 +108,7 @@
                             <button id="copy-code-btn" title="Copier le code"><i class="fas fa-copy"></i></button>
                             <button id="share-link-btn" title="Générer un lien de partage"><i
                                     class="fas fa-link"></i></button>
+                            <button id="qr-code-btn" title="Afficher le QR Code"><i class="fas fa-qrcode"></i></button>
                         </div>
                         <p>Partagez ce code ou un lien direct avec la personne qui doit recevoir le fichier</p>
                     </div>
@@ -143,11 +144,17 @@
                     <div class="code-input-container">
                         <h3>Entrez le code de transfert</h3>
                         <form action="">
-                            <div class="code-input-wrapper">
-                                <input type="text" id="code-input" maxlength="8" placeholder="XXXXXXXX"
-                                    inputmode="numeric" pattern="[0-9]*">
-                                <button id="connect-btn" class="primary-btn">Connecter</button>
+                            <div class="code-digits-wrapper">
+                                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="0">
+                                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="1">
+                                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="2">
+                                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="3">
+                                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="4">
+                                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="5">
+                                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="6">
+                                <input type="text" class="code-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" data-index="7">
                             </div>
+                            <button id="connect-btn" class="primary-btn">Connecter</button>
                         </form>
                     </div>
 
@@ -158,12 +165,14 @@
                             <span>Connexion en cours...</span>
                         </div>
                         <div class="file-info-receive" hidden>
-                            <h4>Fichier à recevoir :</h4>
-                            <div class="file-details">
-                                <i class="fas fa-file"></i>
-                                <div>
-                                    <span class="incoming-file-name">Nom du fichier</span>
-                                    <span class="incoming-file-size">Taille</span>
+                            <div class="incoming-file-card">
+                                <div class="file-icon-wrapper">
+                                    <i class="fas fa-file file-icon-display"></i>
+                                </div>
+                                <div class="file-info-content">
+                                    <div class="file-label">Fichier à recevoir</div>
+                                    <div class="incoming-file-name">Nom du fichier</div>
+                                    <div class="incoming-file-size">Taille</div>
                                 </div>
                             </div>
                         </div>
@@ -201,6 +210,28 @@
 
     </footer>
 
+    <!-- Modale d'acceptation des conditions (première visite) -->
+    <div id="terms-modal" class="modal" style="display:none;position:fixed;z-index:10001;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;">
+        <div style="background-color: var(--background-color); color: var(--text-color);max-width:550px;width:90vw;padding:2em 1.5em;border-radius:10px;box-shadow:0 4px 30px rgba(0,0,0,0.5);position:relative;text-align:center;">
+            <h2 style="color: var(--primary-color);margin-bottom:1em;">Bienvenue sur Sharealuxz</h2>
+            <div style="text-align:left;font-size:0.95em;line-height:1.6;margin-bottom:1.5em;">
+                <p style="margin-bottom:1em;">Avant d'utiliser notre service de transfert de fichiers P2P, veuillez prendre connaissance des points suivants :</p>
+                <ul style="margin-left:20px;margin-bottom:1em;">
+                    <li>Nous ne stockons <strong>aucun fichier</strong> sur nos serveurs</li>
+                    <li>Les transferts sont directs entre utilisateurs (P2P)</li>
+                    <li>Vous êtes <strong>responsable</strong> des fichiers que vous partagez et téléchargez</li>
+                    <li>Soyez vigilant avec les fichiers exécutables (.exe, .bat, etc.)</li>
+                    <li>Nous déclinons toute responsabilité concernant le contenu des fichiers transférés</li>
+                </ul>
+                <p style="font-size:0.9em;opacity:0.9;">Pour plus de détails, consultez notre <a href="#" id="terms-privacy-link" style="color:var(--primary-color);text-decoration:underline;">politique de confidentialité</a>.</p>
+            </div>
+            <div style="display:flex;gap:1em;justify-content:center;">
+                <button id="decline-terms" style="padding:0.8em 1.5em;background:var(--border-color);color:var(--text-color);border:none;border-radius:5px;cursor:pointer;font-size:1em;">Refuser</button>
+                <button id="accept-terms" style="padding:0.8em 2em;background:var(--primary-color);color:white;border:none;border-radius:5px;cursor:pointer;font-size:1em;font-weight:bold;">J'accepte</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modale Politique de confidentialité -->
     <div id="privacy-modal" class="modal"
         style="display:none;position:fixed;z-index:1000;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
@@ -222,14 +253,57 @@
                 <p><strong>4. Conservation :</strong> Aucun fichier n'est conservé sur nos serveurs. Les codes de
                     transfert et informations techniques sont supprimés automatiquement après la fin du transfert ou
                     expiration.</p>
-                <p><strong>5. Contact :</strong> Pour toute question concernant la confidentialité, contactez-nous à
+                <p><strong>5. Responsabilité des utilisateurs :</strong> Sharealuxz est un service de transfert peer-to-peer (P2P).
+                    Les utilisateurs sont seuls responsables du contenu des fichiers qu'ils partagent et téléchargent.
+                    Nous déclinons toute responsabilité concernant :
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>Le contenu des fichiers transférés via notre plateforme</li>
+                        <li>Les dommages causés par des fichiers malveillants (virus, malwares, ransomwares)</li>
+                        <li>L'utilisation abusive ou illégale du service</li>
+                        <li>Les violations de propriété intellectuelle ou de droits d'auteur</li>
+                    </ul>
+                    Les utilisateurs s'engagent à ne pas utiliser le service pour partager du contenu illégal, malveillant ou contraire aux bonnes mœurs.
+                </p>
+                <p><strong>6. Avertissements de sécurité :</strong> Le service affiche des avertissements pour les fichiers
+                    potentiellement dangereux (exécutables, scripts). Il est fortement recommandé de :
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>Ne télécharger que des fichiers provenant de sources de confiance</li>
+                        <li>Analyser tous les fichiers avec un antivirus avant exécution</li>
+                        <li>Être particulièrement vigilant avec les fichiers .exe, .bat, .sh, .php et similaires</li>
+                    </ul>
+                </p>
+                <p><strong>7. Contact :</strong> Pour toute question concernant la confidentialité, contactez-nous à
                     l'adresse : <a href="mailto:contact@codealuxz.fr">contact@codealuxz.fr</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale QR Code -->
+    <div id="qr-modal" class="modal" style="display:none;position:fixed;z-index:10002;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;">
+        <div style="background-color: var(--card-color); color: var(--text-color);max-width:400px;width:90vw;padding:2em 1.5em;border-radius:10px;box-shadow:0 4px 30px rgba(0,0,0,0.5);position:relative;text-align:center;">
+            <button id="close-qr" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;color:var(--text-color);">&times;</button>
+            <h2 style="color: var(--primary-color);margin-bottom:1em;">QR Code de transfert</h2>
+            <div id="qrcode" style="display:flex;justify-content:center;margin:1em 0;"></div>
+            <p style="font-size:0.9em;opacity:0.8;margin-top:1em;">Scannez ce QR code pour accéder directement à la page de réception</p>
+        </div>
+    </div>
+
+    <!-- Modale Contenu ZIP/Archive -->
+    <div id="zip-content-modal" class="modal" style="display:none;position:fixed;z-index:10003;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;">
+        <div style="background-color: var(--card-color); color: var(--text-color);max-width:600px;width:90vw;max-height:80vh;padding:2em 1.5em;border-radius:10px;box-shadow:0 4px 30px rgba(0,0,0,0.5);position:relative;display:flex;flex-direction:column;">
+            <button id="close-zip-modal" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;color:var(--text-color);">&times;</button>
+            <h2 style="color: var(--primary-color);margin-bottom:1em;">Contenu de l'archive</h2>
+            <div id="zip-content-list" style="flex:1;overflow-y:auto;margin-bottom:1.5em;"></div>
+            <div style="display:flex;gap:1em;justify-content:center;">
+                <button id="cancel-download-zip" class="secondary-btn">Annuler</button>
+                <button id="confirm-download-zip" class="primary-btn">Télécharger</button>
             </div>
         </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="js/main.js"></script>
 </body>
 
