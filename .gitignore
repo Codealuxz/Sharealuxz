@@ -38,6 +38,18 @@ dist/
 build/
 coverage/
 
+# Fichiers de test
+test-file-*.bin
+generate-test-file.js
+
+# Base de données
+data/stats.json
+
+# Certificats SSL
+*.pem
+*.key
+*.crt
+
 # Divers
 .cache/
 .tmp/ 

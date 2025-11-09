@@ -19,10 +19,14 @@ const io = new Server(server, {
         origin: '*',
         methods: ['GET', 'POST']
     },
-    maxHttpBufferSize: 1e9, 
-    pingTimeout: 180000, 
-    pingInterval: 150, 
-    transports: ['websocket', 'polling'] 
+    maxHttpBufferSize: 5e9, // Augmenté à 5 GB pour supporter de gros fichiers
+    pingTimeout: 180000,
+    pingInterval: 150,
+    transports: ['websocket', 'polling'],
+    // Optimisations pour la vitesse
+    perMessageDeflate: false, // Désactive la compression WebSocket pour plus de vitesse
+    httpCompression: false, // Désactive la compression HTTP pour plus de vitesse
+    allowEIO3: true // Support des anciennes versions pour compatibilité
 });
 
 app.use(cors());

@@ -3,6 +3,85 @@ var mode = localStorage.getItem('mode') || 'light';
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Notification de migration vers la nouvelle URL (uniquement sur l'ancienne URL)
+    if (window.location.hostname === 'sharealuxz.codealuxz.fr') {
+        const migrationNotif = document.createElement('div');
+        migrationNotif.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff754b, #ee9a3a);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10001;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideInRight 0.5s ease;
+            max-width: 350px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        `;
+        migrationNotif.innerHTML = `
+            <i class="fas fa-info-circle" style="font-size: 1.5em;"></i>
+            <div>
+                <div style="font-size: 1.1em; margin-bottom: 0.25rem;">Nouvelle URL disponible !</div>
+                <div style="font-size: 0.9em; opacity: 0.95;">Cliquez pour accéder à sharealuxz.fr</div>
+            </div>
+        `;
+
+        // Animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        migrationNotif.addEventListener('click', () => {
+            window.location.href = 'https://sharealuxz.fr';
+        });
+
+        migrationNotif.addEventListener('mouseenter', () => {
+            migrationNotif.style.transform = 'scale(1.05)';
+        });
+
+        migrationNotif.addEventListener('mouseleave', () => {
+            migrationNotif.style.transform = 'scale(1)';
+        });
+
+        document.body.appendChild(migrationNotif);
+
+        // Masquer après 5 secondes
+        setTimeout(() => {
+            migrationNotif.style.animation = 'slideOutRight 0.5s ease';
+            setTimeout(() => {
+                migrationNotif.remove();
+            }, 500);
+        }, 5000);
+    }
+
     // Vérifier si l'utilisateur a accepté les conditions
     const hasAcceptedTerms = localStorage.getItem('sharealuxz_terms_accepted');
     const termsModal = document.getElementById('terms-modal');
@@ -182,8 +261,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let fileBuffer = [];
     let receivedSize = 0;
     let fileBlob = null;
-    const CHUNK_SIZE = 1024 * 1024;
-    const MAX_PARALLEL_CHUNKS = 6;
+    // Taille optimisée des chunks pour un meilleur débit (2 MB au lieu de 1 MB)
+    const CHUNK_SIZE = 2 * 1024 * 1024;
+    // Nombre de chunks parallèles augmenté pour saturer la bande passante
+    const MAX_PARALLEL_CHUNKS = 12;
 
 
     let downloadStartTime = 0;
@@ -555,6 +636,60 @@ document.addEventListener('DOMContentLoaded', () => {
     folderInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             handleFileSelection(Array.from(e.target.files), true);
+        }
+    });
+
+    // Zone de drop plein écran
+    const fullscreenDropZone = document.getElementById('fullscreen-drop-zone');
+    let dragCounter = 0;
+
+    // Afficher la zone fullscreen quand on commence à drag
+    document.addEventListener('dragenter', (e) => {
+        // Uniquement si on est dans l'onglet "Envoyer"
+        const sendTab = document.getElementById('send');
+        if (!sendTab.classList.contains('active')) return;
+
+        dragCounter++;
+        if (dragCounter === 1) {
+            fullscreenDropZone.classList.add('active');
+        }
+    });
+
+    document.addEventListener('dragleave', (e) => {
+        dragCounter--;
+        if (dragCounter === 0) {
+            fullscreenDropZone.classList.remove('active');
+        }
+    });
+
+    // Empêcher le comportement par défaut sur toute la page
+    document.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+
+    // Gérer le drop sur la zone fullscreen
+    fullscreenDropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragCounter = 0;
+        fullscreenDropZone.classList.remove('active');
+
+        const items = e.dataTransfer.items;
+        if (items) {
+            let hasFolder = false;
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i].webkitGetAsEntry();
+                if (item && item.isDirectory) {
+                    hasFolder = true;
+                    break;
+                }
+            }
+
+            if (hasFolder) {
+                processFolderDrop(e.dataTransfer);
+            } else {
+                const files = Array.from(e.dataTransfer.files);
+                handleFileSelection(files);
+            }
         }
     });
 
@@ -1206,7 +1341,14 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Envoi des informations du fichier:', fileInfo);
             socket.emit('file-transfer-start', fileInfo);
 
-            window.preparedFileData = fileData.data;
+            // Stocker les données du fichier (ou la référence pour les gros fichiers)
+            if (fileData.file) {
+                window.preparedFile = fileData.file;
+                window.preparedFileData = null;
+            } else {
+                window.preparedFileData = fileData.data;
+                window.preparedFile = null;
+            }
         }).catch(error => {
             console.error("Erreur de préparation:", error);
             connectionStatus.className = 'connection-status error';
@@ -1293,14 +1435,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 for (const file of selectedFiles) {
                     console.log("Ajout au ZIP:", file.name, "taille:", formatFileSize(file.size));
 
-                    const content = await readFileAsArrayBuffer(file);
-
-                    if (file.relativePath) {
-                        zip.file(file.relativePath, content);
-                    } else if (file.webkitRelativePath) {
-                        zip.file(file.webkitRelativePath, content);
+                    // Pour les gros fichiers, on les lit par morceaux
+                    if (file.size > 100 * 1024 * 1024) { // Plus de 100 MB
+                        console.log("Gros fichier détecté, lecture par morceaux");
+                        const content = await readFileInChunks(file);
+                        if (file.relativePath) {
+                            zip.file(file.relativePath, content);
+                        } else if (file.webkitRelativePath) {
+                            zip.file(file.webkitRelativePath, content);
+                        } else {
+                            zip.file(file.name, content);
+                        }
                     } else {
-                        zip.file(file.name, content);
+                        const content = await readFileAsArrayBuffer(file);
+                        if (file.relativePath) {
+                            zip.file(file.relativePath, content);
+                        } else if (file.webkitRelativePath) {
+                            zip.file(file.webkitRelativePath, content);
+                        } else {
+                            zip.file(file.name, content);
+                        }
                     }
                 }
 
@@ -1309,7 +1463,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const zipContent = await zip.generateAsync({
                     type: 'arraybuffer',
                     compression: 'DEFLATE',
-                    compressionOptions: { level: 6 }
+                    compressionOptions: { level: 3 } // Niveau réduit (3 au lieu de 6) pour compression plus rapide
                 }, (metadata) => {
 
                     const progress = Math.round(metadata.percent);
@@ -1341,6 +1495,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
 
             console.log("Envoi d'un seul fichier:", selectedFiles[0].name);
+
+            // Pour les gros fichiers (plus de 500 MB), on ne charge pas tout en mémoire
+            if (selectedFiles[0].size > 500 * 1024 * 1024) {
+                console.log("Gros fichier détecté, envoi direct sans chargement complet en mémoire");
+                // On retourne le fichier directement sans le charger
+                return {
+                    name: selectedFiles[0].name,
+                    size: selectedFiles[0].size,
+                    type: selectedFiles[0].type,
+                    file: selectedFiles[0] // Référence au fichier original
+                };
+            }
+
             const fileContent = await readFileAsArrayBuffer(selectedFiles[0]);
             return {
                 name: selectedFiles[0].name,
@@ -1360,14 +1527,57 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Lecture de fichier par morceaux pour économiser la mémoire
+    async function readFileInChunks(file) {
+        const chunkSize = 50 * 1024 * 1024; // 50 MB par morceau (optimisé pour la vitesse)
+        const chunks = [];
+        let offset = 0;
+
+        while (offset < file.size) {
+            const slice = file.slice(offset, offset + chunkSize);
+            const chunk = await readFileAsArrayBuffer(slice);
+            chunks.push(chunk);
+            offset += chunkSize;
+
+            // Laisser respirer le navigateur (réduit pour plus de vitesse)
+            if (offset < file.size) {
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        }
+
+        // Combiner tous les morceaux de manière optimisée
+        const totalSize = chunks.reduce((sum, chunk) => sum + chunk.byteLength, 0);
+        const combined = new Uint8Array(totalSize);
+        let position = 0;
+        for (const chunk of chunks) {
+            combined.set(new Uint8Array(chunk), position);
+            position += chunk.byteLength;
+        }
+
+        return combined.buffer;
+    }
+
     socket.on('ready-to-receive', (data) => {
         console.log('Le récepteur est prêt à recevoir le fichier');
 
         progressContainers[0].hidden = false;
 
-        
-        const fileContent = window.preparedFileData;
-        const fileSize = fileContent.byteLength;
+        // Vérifier si on a un gros fichier qui n'a pas été chargé en mémoire
+        let fileContent, fileSize, isLargeFile = false;
+
+        if (window.preparedFileData) {
+            fileContent = window.preparedFileData;
+            fileSize = fileContent.byteLength;
+        } else if (window.preparedFile) {
+            // Gros fichier non chargé en mémoire
+            isLargeFile = true;
+            const file = window.preparedFile;
+            fileSize = file.size;
+        } else {
+            console.error("Aucune donnée de fichier préparée");
+            return;
+        }
+
         let offset = data.offset || 0;
         let lastProgress = 0;
         let lastSavedProgress = 0;
@@ -1404,14 +1614,24 @@ document.addEventListener('DOMContentLoaded', () => {
             let nextChunkOffset = offset;
             let transferComplete = false;
 
-            
+
             const sendSingleChunk = async (chunkOffset) => {
                 if (chunkOffset >= fileSize || !isTransferring || transferComplete) {
                     return;
                 }
 
                 const end = Math.min(chunkOffset + CHUNK_SIZE, fileSize);
-                const chunk = fileContent.slice(chunkOffset, end);
+                let chunk;
+
+                // Si c'est un gros fichier, on lit le morceau à la volée
+                if (isLargeFile) {
+                    const file = window.preparedFile;
+                    const slice = file.slice(chunkOffset, end);
+                    chunk = await readFileAsArrayBuffer(slice);
+                } else {
+                    chunk = fileContent.slice(chunkOffset, end);
+                }
+
                 const chunkSize = end - chunkOffset;
                 const progress = Math.min(99, Math.round((Math.max(offset, chunkOffset + chunkSize) / fileSize) * 100));
 
