@@ -78,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileCount = document.querySelector('.file-count');
     const fileSize = document.querySelector('.file-size');
     const startSendBtn = document.getElementById('start-send-btn');
-    const cancelSendBtn = document.getElementById('cancel-send-btn');
     const codeContainer = document.querySelector('.code-container');
     const transferCode = document.getElementById('transfer-code');
     const copyCodeBtn = document.getElementById('copy-code-btn');
@@ -292,7 +291,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const zipModal = document.getElementById('zip-content-modal');
             const zipContentList = document.getElementById('zip-content-list');
             const confirmBtn = document.getElementById('confirm-download-zip');
-                        const closeBtn = document.getElementById('close-zip-modal');
+            const cancelBtn = document.getElementById('cancel-download-zip');
+            const closeBtn = document.getElementById('close-zip-modal');
 
             try {
                 // Lire le contenu du ZIP
@@ -377,11 +377,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const cleanup = () => {
                     confirmBtn.removeEventListener('click', handleConfirm);
+                    cancelBtn.removeEventListener('click', handleCancel);
                     closeBtn.removeEventListener('click', handleCancel);
                     zipModal.style.display = 'none';
                 };
 
                 confirmBtn.addEventListener('click', handleConfirm);
+                cancelBtn.addEventListener('click', handleCancel);
                 closeBtn.addEventListener('click', handleCancel);
 
             } catch (error) {
@@ -396,11 +398,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const handleClose = () => {
                     closeBtn.removeEventListener('click', handleClose);
+                    cancelBtn.removeEventListener('click', handleClose);
                     zipModal.style.display = 'none';
                     resolve(false);
                 };
 
                 closeBtn.addEventListener('click', handleClose);
+                cancelBtn.addEventListener('click', handleClose);
             }
         });
     }
@@ -490,7 +494,6 @@ document.addEventListener('DOMContentLoaded', () => {
         startSendBtn.disabled = true;
         codeContainer.hidden = true;
         transferStatus.hidden = true;
-        cancelSendBtn.hidden = true;
         connectionStatus.className = 'connection-status waiting';
         connectionStatus.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i><span>En attente de connexion...</span>';
         progressBars[0].style.width = '0%';
@@ -809,15 +812,6 @@ document.addEventListener('DOMContentLoaded', () => {
         codeContainer.hidden = false;
         transferStatus.hidden = false;
         startSendBtn.hidden = true;
-        cancelSendBtn.hidden = false;
-    });
-
-    cancelSendBtn.addEventListener('click', () => {
-        resetSendUI();
-        if (receiverConnection) {
-            socket.emit('cancel-transfer', { receiverId: receiverConnection });
-            receiverConnection = null;
-        }
     });
 
     copyCodeBtn.addEventListener('click', () => {
@@ -1531,11 +1525,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sendChunks().catch(error => {
             console.error('Erreur globale lors de l\'envoi:', error);
-        });
-
-        cancelSendBtn.addEventListener('click', function cancelHandler() {
-            isTransferring = false;
-            cancelSendBtn.removeEventListener('click', cancelHandler);
         });
     });
 
