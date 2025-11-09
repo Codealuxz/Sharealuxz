@@ -42,7 +42,11 @@ app.use(helmet({
                 "https://googleads.g.doubleclick.net",
                 "https://www.googletagservices.com",
                 "https://ep2.adtrafficquality.google",
-                "https://cdn.socket.io"
+                "https://cdn.socket.io",
+                "https://cmp.gatekeeperconsent.com",
+                "https://the.gatekeeperconsent.com",
+                "https://www.ezojs.com",
+                "http://www.ezojs.com"
             ],
             scriptSrcAttr: ["'unsafe-inline'", "'unsafe-hashes'"],
             styleSrc: [
