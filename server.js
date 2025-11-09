@@ -42,11 +42,7 @@ app.use(helmet({
                 "https://googleads.g.doubleclick.net",
                 "https://www.googletagservices.com",
                 "https://ep2.adtrafficquality.google",
-                "https://cdn.socket.io",
-                "https://cmp.gatekeeperconsent.com",
-                "https://the.gatekeeperconsent.com",
-                "https://www.ezojs.com",
-                "http://www.ezojs.com"
+                "https://cdn.socket.io"
             ],
             scriptSrcAttr: ["'unsafe-inline'", "'unsafe-hashes'"],
             styleSrc: [
@@ -81,11 +77,6 @@ app.use(helmet({
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));
-
-// Redirection ads.txt vers Ezoic Ads.txt Manager
-app.get('/ads.txt', (req, res) => {
-    res.redirect(301, 'https://srv.adstxtmanager.com/80286/sharealuxz.fr');
-});
 
 
 const activeConnections = new Map();
