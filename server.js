@@ -82,6 +82,11 @@ app.use(helmet({
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Redirection ads.txt vers Ezoic Ads.txt Manager
+app.get('/ads.txt', (req, res) => {
+    res.redirect(301, 'https://srv.adstxtmanager.com/80286/sharealuxz.fr');
+});
+
 
 const activeConnections = new Map();
 
