@@ -90,9 +90,6 @@ const activeTransfers = new Map();
 const transferTokens = new Map();
 
 
-const statsFilePath = path.join(__dirname, 'data', 'stats.json');
-
-
 let totalFilesSent = 0;
 let totalBytesSent = 0;
 
@@ -114,8 +111,7 @@ async function connectMongoDB() {
         await loadStatsFromMongoDB();
     } catch (err) {
         console.error('Erreur de connexion MongoDB:', err);
-        console.log('Utilisation du système de fichiers comme fallback');
-        loadStatsFromFile();
+        console.error('ATTENTION: Impossible de se connecter à MongoDB. Les statistiques ne seront pas sauvegardées.');
     }
 }
 
@@ -155,58 +151,15 @@ async function saveStatsToMongoDB() {
     }
 }
 
-function ensureDataDir() {
-    const dataDir = path.join(__dirname, 'data');
-    if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
-        console.log('Dossier data créé');
-    }
-}
-
-
-function loadStatsFromFile() {
-    ensureDataDir();
-    try {
-        if (fs.existsSync(statsFilePath)) {
-            const statsData = fs.readFileSync(statsFilePath, 'utf8');
-            const stats = JSON.parse(statsData);
-            totalFilesSent = stats.totalFiles || 0;
-            totalBytesSent = parseFloat(stats.totalGB || 0) * 1024 * 1024 * 1024;
-            console.log(`Statistiques chargées: ${totalFilesSent} fichiers, ${(totalBytesSent / (1024 * 1024 * 1024)).toFixed(2)} Go`);
-        } else {
-            console.log('Aucun fichier de statistiques trouvé, démarrage avec des valeurs à 0');
-            saveStatsToFile();
-        }
-    } catch (err) {
-        console.error('Erreur lors du chargement des statistiques:', err);
-
-    }
-}
-
-
-function saveStatsToFile() {
-    ensureDataDir();
-    try {
-        const stats = {
-            totalFiles: totalFilesSent,
-            totalGB: parseFloat((totalBytesSent / (1024 * 1024 * 1024)).toFixed(2))
-        };
-        fs.writeFileSync(statsFilePath, JSON.stringify(stats, null, 2), 'utf8');
-        console.log('Statistiques sauvegardées dans le fichier');
-    } catch (err) {
-        console.error('Erreur lors de la sauvegarde des statistiques:', err);
-    }
-}
 
 
 // Initialisation MongoDB
 connectMongoDB();
 
 
-// Sauvegarder les stats périodiquement (MongoDB + fichier en backup)
+// Sauvegarder les stats périodiquement dans MongoDB
 setInterval(async () => {
     await saveStatsToMongoDB();
-    saveStatsToFile();
 }, 5 * 60 * 1000); 
 
 
@@ -399,9 +352,8 @@ io.on('connection', (socket) => {
             totalFilesSent++;
             totalBytesSent += data.size;
 
-            // Sauvegarder dans MongoDB et fichier
+            // Sauvegarder dans MongoDB
             saveStatsToMongoDB();
-            saveStatsToFile();
             broadcastStats();
 
             
@@ -648,7 +600,6 @@ server.listen(PORT, () => {
 process.on('SIGINT', async () => {
     console.log('Arrêt du serveur, sauvegarde des statistiques...');
     await saveStatsToMongoDB();
-    saveStatsToFile();
     await mongoClient.close();
     process.exit();
 });
@@ -656,7 +607,6 @@ process.on('SIGINT', async () => {
 process.on('SIGTERM', async () => {
     console.log('Arrêt du serveur, sauvegarde des statistiques...');
     await saveStatsToMongoDB();
-    saveStatsToFile();
     await mongoClient.close();
     process.exit();
 }); 
