@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration des Statistiques - Sharealuxz</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff754b;
+            --primary-hover: #ee9a3a;
+            --secondary-color: #f0f5ff;
+            --text-color: #141414;
+            --light-text: #313131;
+            --third-color: #f0f5ff;
+            --border-color: #e1e4e8;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --card-color: #ffffff;
+            --font-main: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            --border-radius: 8px;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            --background-color: #ededed;
+        }
+
+        body.dark {
+            --primary-color: #ff754b;
+            --primary-hover: #ee9a3a;
+            --secondary-color: #484848;
+            --third-color: #c8c8c8;
+            --card-color: rgb(58, 58, 58);
+            --text-color: #cacaca;
+            --light-text: #ededed;
+            --border-color: #e1e4e8;
+            --background-color: #101010;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .admin-container {
+            max-width: 600px;
+            width: 100%;
+            background: var(--card-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 40px;
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .admin-header h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .admin-header p {
+            color: var(--light-text);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            background: var(--background-color);
+            color: var(--text-color);
+            transition: var(--transition);
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: var(--light-text);
+            font-size: 0.85rem;
+        }
+
+        .current-stats {
+            background: var(--secondary-color);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+        }
+
+        .current-stats h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--text-color);
+            font-size: 1.2rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-weight: 500;
+            color: var(--light-text);
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 117, 75, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--card-color);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--card-shadow);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            border-color: var(--primary-color);
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: var(--text-color);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background: var(--card-color);
+            border-radius: var(--border-radius);
+            border: 2px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 30px 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .back-link, .theme-toggle {
+                position: static;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="index.html" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+        Retour
+    </a>
+
+    <div class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon" id="theme-icon"></i>
+    </div>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1><i class="fas fa-chart-line"></i> Administration des Statistiques</h1>
+            <p>Gérez les statistiques de transfert de fichiers</p>
+        </div>
+
+        <div id="alert" class="alert"></div>
+
+        <div class="current-stats">
+            <h3>Statistiques actuelles</h3>
+            <div class="stat-item">
+                <span class="stat-label">Fichiers envoyés</span>
+                <span class="stat-value" id="current-files">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Données transférées</span>
+                <span class="stat-value" id="current-gb">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Dernière mise à jour</span>
+                <span class="stat-value" id="last-updated">-</span>
+            </div>
+        </div>
+
+        <form id="stats-form">
+            <div class="form-group">
+                <label for="totalFiles">
+                    <i class="fas fa-file"></i> Nombre de fichiers envoyés
+                </label>
+                <input type="number" id="totalFiles" name="totalFiles" min="0" required>
+                <small>Entrez le nombre total de fichiers à afficher dans les statistiques</small>
+            </div>
+
+            <div class="form-group">
+                <label for="totalGB">
+                    <i class="fas fa-database"></i> Données transférées (Go)
+                </label>
+                <input type="number" id="totalGB" name="totalGB" min="0" step="0.01" required>
+                <small>Entrez le volume total de données en gigaoctets (Go)</small>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Sauvegarder
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="loadCurrentStats()">
+                    <i class="fas fa-sync-alt"></i> Actualiser
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Gestion du thème
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+
+            if (body.classList.contains('dark')) {
+                body.classList.remove('dark');
+                icon.className = 'fas fa-moon';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.add('dark');
+                icon.className = 'fas fa-sun';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Charger le thème sauvegardé
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const icon = document.getElementById('theme-icon');
+
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                icon.className = 'fas fa-sun';
+            } else {
+                icon.className = 'fas fa-moon';
+            }
+        }
+
+        // Afficher un message
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type} show`;
+
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+
+        // Charger les statistiques actuelles
+        async function loadCurrentStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+
+                document.getElementById('current-files').textContent = stats.totalFiles.toLocaleString('fr-FR');
+                document.getElementById('current-gb').textContent = stats.totalGB.toFixed(2) + ' Go';
+
+                // Charger depuis l'API admin pour avoir la date de mise à jour
+                const adminResponse = await fetch('/api/admin/stats');
+                const adminStats = await adminResponse.json();
+
+                if (adminStats.lastUpdated) {
+                    const date = new Date(adminStats.lastUpdated);
+                    document.getElementById('last-updated').textContent = date.toLocaleString('fr-FR');
+                } else {
+                    document.getElementById('last-updated').textContent = 'Jamais';
+                }
+
+                // Pré-remplir le formulaire
+                document.getElementById('totalFiles').value = stats.totalFiles;
+                document.getElementById('totalGB').value = stats.totalGB;
+            } catch (error) {
+                console.error('Erreur lors du chargement des statistiques:', error);
+                showAlert('Erreur lors du chargement des statistiques', 'error');
+            }
+        }
+
+        // Soumettre le formulaire
+        document.getElementById('stats-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const totalFiles = parseInt(document.getElementById('totalFiles').value);
+            const totalGB = parseFloat(document.getElementById('totalGB').value);
+
+            if (totalFiles < 0 || totalGB < 0) {
+                showAlert('Les valeurs ne peuvent pas être négatives', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/stats', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        totalFiles: totalFiles,
+                        totalGB: totalGB
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showAlert('Statistiques mises à jour avec succès !', 'success');
+                    await loadCurrentStats();
+                } else {
+                    showAlert(result.error || 'Erreur lors de la mise à jour', 'error');
+                }
+            } catch (error) {
+                console.error('Erreur lors de la sauvegarde:', error);
+                showAlert('Erreur lors de la sauvegarde des statistiques', 'error');
+            }
+        });
+
+        // Vérifier si l'administration est activée
+        async function checkAdminAccess() {
+            try {
+                const response = await fetch('/api/admin/enabled');
+                const data = await response.json();
+
+                if (!data.enabled) {
+                    // Rediriger vers la page d'accueil si l'admin est désactivé
+                    alert('L\'administration est désactivée.');
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                console.error('Erreur lors de la vérification de l\'accès admin:', error);
+                alert('Erreur lors de la vérification de l\'accès admin.');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Initialisation
+        window.addEventListener('load', async () => {
+            await checkAdminAccess();
+            loadTheme();
+            loadCurrentStats();
+        });
+    </script>
+</body>
+
+</html>

@@ -2207,10 +2207,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     socket.on('stats-update', updateStatsBar);
 
-    
+
     fetch('/stats')
         .then(r => r.json())
         .then(updateStatsBar)
+        .catch(() => { });
+
+    // Vérifier si l'administration est activée
+    fetch('/api/admin/enabled')
+        .then(r => r.json())
+        .then(data => {
+            if (data.enabled) {
+                const adminLinkContainer = document.getElementById('admin-link-container');
+                if (adminLinkContainer) {
+                    adminLinkContainer.style.display = 'inline';
+                }
+            }
+        })
         .catch(() => { });
 
     if (mode === "dark") {

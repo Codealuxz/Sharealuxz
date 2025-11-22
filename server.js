@@ -221,6 +221,15 @@ function broadcastStats() {
 }
 
 
+// Middleware pour vérifier si l'administration est activée
+function checkAdminEnabled(req, res, next) {
+    const isAdminEnabled = process.env.ADMIN_ENABLED === 'true';
+    if (!isAdminEnabled) {
+        return res.status(403).json({ error: 'Administration désactivée' });
+    }
+    next();
+}
+
 app.get('/stats', (req, res) => {
     res.json({
         activeUsers: getActiveConnectionsCount(),
@@ -241,6 +250,87 @@ app.get('/api/stats', (req, res) => {
     } catch (err) {
         console.error('Erreur lors de la récupération des statistiques:', err);
         res.status(500).json({ error: 'Erreur serveur lors de la récupération des statistiques' });
+    }
+});
+
+// Route pour vérifier si l'administration est activée
+app.get('/api/admin/enabled', (req, res) => {
+    const isAdminEnabled = process.env.ADMIN_ENABLED === 'true';
+    res.json({ enabled: isAdminEnabled });
+});
+
+// Route pour récupérer les stats admin (avec date de mise à jour)
+app.get('/api/admin/stats', checkAdminEnabled, async (req, res) => {
+    try {
+        const stats = await statsCollection.findOne({ _id: 'global' });
+        if (stats) {
+            res.json({
+                totalFiles: stats.totalFiles || 0,
+                totalGB: stats.totalGB || 0,
+                totalBytes: stats.totalBytes || 0,
+                lastUpdated: stats.lastUpdated
+            });
+        } else {
+            res.json({
+                totalFiles: 0,
+                totalGB: 0,
+                totalBytes: 0,
+                lastUpdated: null
+            });
+        }
+    } catch (err) {
+        console.error('Erreur lors de la récupération des statistiques admin:', err);
+        res.status(500).json({ error: 'Erreur serveur lors de la récupération des statistiques' });
+    }
+});
+
+// Route pour mettre à jour les stats manuellement
+app.put('/api/admin/stats', checkAdminEnabled, express.json(), async (req, res) => {
+    try {
+        const { totalFiles, totalGB } = req.body;
+
+        if (typeof totalFiles !== 'number' || typeof totalGB !== 'number') {
+            return res.status(400).json({ error: 'Les paramètres totalFiles et totalGB doivent être des nombres' });
+        }
+
+        if (totalFiles < 0 || totalGB < 0) {
+            return res.status(400).json({ error: 'Les valeurs ne peuvent pas être négatives' });
+        }
+
+        // Convertir GB en bytes
+        const totalBytes = totalGB * 1024 * 1024 * 1024;
+
+        // Mettre à jour les variables globales
+        totalFilesSent = totalFiles;
+        totalBytesSent = totalBytes;
+
+        // Sauvegarder dans MongoDB
+        await statsCollection.updateOne(
+            { _id: 'global' },
+            {
+                $set: {
+                    totalFiles: totalFiles,
+                    totalBytes: totalBytes,
+                    totalGB: parseFloat(totalGB.toFixed(2)),
+                    lastUpdated: new Date()
+                }
+            },
+            { upsert: true }
+        );
+
+        console.log(`Statistiques mises à jour manuellement: ${totalFiles} fichiers, ${totalGB.toFixed(2)} Go`);
+
+        // Diffuser les nouvelles stats à tous les clients connectés
+        broadcastStats();
+
+        res.json({
+            success: true,
+            totalFiles: totalFiles,
+            totalGB: parseFloat(totalGB.toFixed(2))
+        });
+    } catch (err) {
+        console.error('Erreur lors de la mise à jour des statistiques:', err);
+        res.status(500).json({ error: 'Erreur serveur lors de la mise à jour des statistiques' });
     }
 });
 
