@@ -1232,3 +1232,212 @@ a:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
+
+/* Styles pour le sélecteur de type de transfert */
+.transfer-type-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: var(--secondary-color);
+    padding: 5px;
+    border-radius: var(--border-radius);
+}
+
+.type-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: calc(var(--border-radius) - 3px);
+    background: transparent;
+    color: var(--light-text);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.type-btn:hover {
+    background: var(--card-color);
+    color: var(--text-color);
+}
+
+.type-btn.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 8px rgba(255, 117, 75, 0.3);
+}
+
+.type-btn i {
+    font-size: 1.1rem;
+}
+
+/* Styles pour le conteneur de texte */
+.text-upload-container {
+    margin-top: 20px;
+}
+
+.text-input-area {
+    background: var(--card-color);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+}
+
+.text-input-area textarea {
+    width: 100%;
+    min-height: 250px;
+    padding: 15px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    font-family: var(--font-main);
+    font-size: 1rem;
+    color: var(--text-color);
+    background: var(--background-color);
+    resize: vertical;
+    transition: var(--transition);
+}
+
+.text-input-area textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 117, 75, 0.1);
+}
+
+.text-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.text-actions button {
+    flex: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.text-info {
+    margin-top: 10px;
+    color: var(--light-text);
+    font-size: 0.9rem;
+    text-align: right;
+}
+
+/* Styles pour la réception de texte */
+.text-receive-area {
+    margin-top: 20px;
+}
+
+.received-text-card {
+    background: var(--secondary-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.text-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    color: white;
+    font-size: 1.8rem;
+}
+
+.text-preview-content {
+    text-align: center;
+}
+
+.text-label {
+    font-size: 0.9rem;
+    color: var(--light-text);
+    margin-bottom: 10px;
+}
+
+.received-text-preview {
+    background: var(--card-color);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    text-align: left;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95rem;
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.text-char-info {
+    font-size: 0.85rem;
+    color: var(--light-text);
+    margin-top: 5px;
+}
+
+.text-receive-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.text-receive-actions button {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Responsive pour mobile */
+@media (max-width: 768px) {
+    .transfer-type-selector {
+        flex-direction: column;
+    }
+
+    .type-btn {
+        width: 100%;
+    }
+
+    .text-actions {
+        flex-direction: column;
+    }
+
+    .text-receive-actions {
+        flex-direction: column;
+    }
+
+    .text-receive-actions button {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .text-input-area textarea {
+        min-height: 200px;
+    }
+}

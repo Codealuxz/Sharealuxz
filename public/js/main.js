@@ -167,6 +167,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const qrModal = document.getElementById('qr-modal');
     const closeQrBtn = document.getElementById('close-qr');
 
+    // Éléments pour le transfert de texte
+    const typeBtns = document.querySelectorAll('.type-btn');
+    const fileContainer = document.getElementById('file-container');
+    const textContainer = document.getElementById('text-container');
+    const textInput = document.getElementById('text-input');
+    const pasteFromClipboardBtn = document.getElementById('paste-from-clipboard-btn');
+    const clearTextBtn = document.getElementById('clear-text-btn');
+    const textCharCount = document.getElementById('text-char-count');
+    const textReceiveArea = document.querySelector('.text-receive-area');
+    const receivedTextPreview = document.getElementById('received-text-preview');
+    const receivedTextCharCount = document.getElementById('received-text-char-count');
+    const copyTextBtn = document.getElementById('copy-text-btn');
+    const downloadTextBtn = document.getElementById('download-text-btn');
+
+    let currentTransferType = 'file'; // 'file' ou 'text'
+    let textContent = '';
+
     const codeDigits = document.querySelectorAll('.code-digit');
     const connectBtn = document.getElementById('connect-btn');
     const receiveStatus = document.querySelector('.receive-status');
@@ -568,11 +585,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resetSendUI() {
         selectedFiles = [];
+        textContent = '';
+        currentTransferType = 'file';
         isFolder = false;
         totalSize = 0;
+        receiverConnection = null;
+
         fileInfo.hidden = true;
         fileDropArea.hidden = false;
+        fileDropArea.style.display = 'flex';
         startSendBtn.disabled = true;
+        startSendBtn.hidden = false;
         codeContainer.hidden = true;
         transferStatus.hidden = true;
         connectionStatus.className = 'connection-status waiting';
@@ -583,9 +606,32 @@ document.addEventListener('DOMContentLoaded', () => {
         progressContainers[0].hidden = true;
         previewContainer.innerHTML = '';
 
+        // Réafficher le sélecteur de type et les conteneurs
+        const transferTypeSelector = document.querySelector('.transfer-type-selector');
+        if (transferTypeSelector) {
+            transferTypeSelector.style.display = 'flex';
+        }
+        if (fileContainer) {
+            fileContainer.style.display = 'block';
+        }
+        if (textContainer) {
+            textContainer.style.display = 'block';
+        }
+
+        // Réinitialiser le conteneur de texte
+        if (textInput) {
+            textInput.value = '';
+            textCharCount.textContent = '0 caractères';
+        }
+
         // Désactiver la protection de fermeture de page
         isTransferActive = false;
         showTransferWarning(false);
+
+        // Recharger la page après 2 secondes
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
     }
 
     function resetReceiveUI() {
@@ -604,6 +650,12 @@ document.addEventListener('DOMContentLoaded', () => {
         progressTransferred[1].textContent = '0 MB / 0 MB';
         progressContainers[1].hidden = true;
 
+        // Réafficher le conteneur de saisie du code
+        const codeInputContainer = document.querySelector('.code-input-container');
+        if (codeInputContainer) {
+            codeInputContainer.style.display = 'block';
+        }
+
         fileBuffer = [];
         receivedSize = 0;
         fileBlob = null;
@@ -614,18 +666,134 @@ document.addEventListener('DOMContentLoaded', () => {
         // Désactiver la protection de fermeture de page
         isTransferActive = false;
         showTransferWarning(false);
+
+        // Supprimer le code de l'URL si présent
+        removeCodeFromUrl();
+    }
+
+    // Fonction pour changer d'onglet
+    function switchTab(tabId) {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+
+        const targetBtn = Array.from(tabBtns).find(b => b.getAttribute('data-tab') === tabId);
+        if (targetBtn) {
+            targetBtn.classList.add('active');
+        }
+
+        const targetContent = document.getElementById(tabId);
+        if (targetContent) {
+            targetContent.classList.add('active');
+        }
+
+        // Mettre à jour l'URL sans recharger la page
+        const url = new URL(window.location);
+        url.searchParams.set('tab', tabId);
+        window.history.pushState({}, '', url);
     }
 
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            tabBtns.forEach(b => b.classList.remove('active'));
-            tabContents.forEach(c => c.classList.remove('active'));
-
-            btn.classList.add('active');
             const tabId = btn.getAttribute('data-tab');
-            document.getElementById(tabId).classList.add('active');
+            switchTab(tabId);
         });
     });
+
+    // Au chargement, vérifier l'URL pour l'onglet actif
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabFromUrl = urlParams.get('tab');
+    if (tabFromUrl && (tabFromUrl === 'send' || tabFromUrl === 'receive')) {
+        switchTab(tabFromUrl);
+    }
+
+    // Gestion du changement de type de transfert
+    typeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Retirer la classe active de tous les boutons
+            typeBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            currentTransferType = btn.getAttribute('data-type');
+
+            // Afficher/masquer les conteneurs appropriés
+            if (currentTransferType === 'file') {
+                fileContainer.hidden = false;
+                textContainer.hidden = true;
+                startSendBtn.disabled = selectedFiles.length === 0;
+            } else {
+                fileContainer.hidden = true;
+                textContainer.hidden = false;
+                startSendBtn.disabled = textContent.trim() === '';
+            }
+        });
+    });
+
+    // Gestion de la saisie de texte
+    if (textInput) {
+        textInput.addEventListener('input', () => {
+            textContent = textInput.value;
+            textCharCount.textContent = `${textContent.length} caractères`;
+            startSendBtn.disabled = textContent.trim() === '';
+        });
+    }
+
+    // Bouton coller depuis le presse-papiers
+    if (pasteFromClipboardBtn) {
+        pasteFromClipboardBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                textInput.value = text;
+                textContent = text;
+                textCharCount.textContent = `${textContent.length} caractères`;
+                startSendBtn.disabled = textContent.trim() === '';
+            } catch (err) {
+                console.error('Erreur lors de la lecture du presse-papiers:', err);
+                alert('Impossible de lire le presse-papiers. Assurez-vous d\'avoir donné les permissions nécessaires.');
+            }
+        });
+    }
+
+    // Bouton effacer le texte
+    if (clearTextBtn) {
+        clearTextBtn.addEventListener('click', () => {
+            textInput.value = '';
+            textContent = '';
+            textCharCount.textContent = '0 caractères';
+            startSendBtn.disabled = true;
+        });
+    }
+
+    // Boutons de réception de texte
+    if (copyTextBtn) {
+        copyTextBtn.addEventListener('click', async () => {
+            try {
+                const textToCopy = receivedTextPreview.textContent;
+                await navigator.clipboard.writeText(textToCopy);
+                copyTextBtn.innerHTML = '<i class="fas fa-check"></i> Copié !';
+                setTimeout(() => {
+                    copyTextBtn.innerHTML = '<i class="fas fa-copy"></i> Copier dans le presse-papiers';
+                }, 2000);
+            } catch (err) {
+                console.error('Erreur lors de la copie:', err);
+                alert('Impossible de copier dans le presse-papiers.');
+            }
+        });
+    }
+
+    if (downloadTextBtn) {
+        downloadTextBtn.addEventListener('click', () => {
+            const textToDownload = receivedTextPreview.textContent;
+            const blob = new Blob([textToDownload], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `texte-sharealuxz-${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    }
 
     fileInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
@@ -941,12 +1109,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     startSendBtn.addEventListener('click', () => {
-        if (selectedFiles.length === 0) return;
+        // Vérifier si on envoie des fichiers ou du texte
+        if (currentTransferType === 'file') {
+            if (selectedFiles.length === 0) return;
+        } else if (currentTransferType === 'text') {
+            if (textContent.trim() === '') return;
+        } else {
+            return;
+        }
 
         socket.emit('generate-code');
         codeContainer.hidden = false;
         transferStatus.hidden = false;
         startSendBtn.hidden = true;
+
+        // Cacher la zone de sélection de fichiers/texte et le sélecteur de type
+        const transferTypeSelector = document.querySelector('.transfer-type-selector');
+        if (transferTypeSelector) {
+            transferTypeSelector.style.display = 'none';
+        }
+
+        // Cacher le conteneur de fichiers ou de texte
+        if (fileContainer) {
+            fileContainer.style.display = 'none';
+        }
+        if (textContainer) {
+            textContainer.style.display = 'none';
+        }
     });
 
     copyCodeBtn.addEventListener('click', () => {
@@ -1314,9 +1503,35 @@ document.addEventListener('DOMContentLoaded', () => {
         connectionStatus.className = 'connection-status success';
         connectionStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Récepteur connecté! Transfert prêt.</span>';
 
-        
+
         const transferToken = generateTransferToken();
 
+        // Si c'est du texte, on l'envoie directement
+        if (currentTransferType === 'text') {
+            const encoder = new TextEncoder();
+            const textData = encoder.encode(textContent);
+
+            const fileInfo = {
+                receiverId: receiverConnection,
+                name: 'texte.txt',
+                size: textData.byteLength,
+                type: 'text/plain',
+                transferId: data.transferId,
+                token: transferToken,
+                isText: true  // Indicateur pour le récepteur
+            };
+
+            saveTransferState(data.transferId, transferToken, fileInfo);
+            console.log('Envoi du texte:', fileInfo);
+            socket.emit('file-transfer-start', fileInfo);
+
+            // Stocker le contenu du texte
+            window.preparedFileData = textData.buffer;
+            window.preparedFile = null;
+            return;
+        }
+
+        // Sinon, c'est un fichier (comportement normal)
         if (isFolder || selectedFiles.length > 1) {
             showCompressionStatus(true, 0);
         }
@@ -1332,10 +1547,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 size: fileData.size,
                 type: fileData.type,
                 transferId: data.transferId,
-                token: transferToken 
+                token: transferToken
             };
 
-            
+
             saveTransferState(data.transferId, transferToken, fileInfo);
 
             console.log('Envoi des informations du fichier:', fileInfo);
@@ -1358,20 +1573,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('connected-to-sender', (data) => {
         senderConnection = data.senderId;
+        receiveStatus.hidden = false;
         document.querySelector('.receive-status .connection-status').className = 'connection-status success';
         document.querySelector('.receive-status .connection-status').innerHTML = '<i class="fas fa-check-circle"></i><span>Connexion établie!</span>';
         isTransferActive = true;
+
+        // Cacher le conteneur de saisie du code
+        const codeInputContainer = document.querySelector('.code-input-container');
+        if (codeInputContainer) {
+            codeInputContainer.style.display = 'none';
+        }
     });
+
+    let isReceivingText = false; // Variable globale pour suivre si on reçoit du texte
 
     socket.on('file-transfer-start', (data) => {
         console.log('Informations du fichier reçues:', data);
-        fileInfoReceive.hidden = false;
-        incomingFileName.textContent = data.name;
-        incomingFileSize.textContent = formatFileSize(data.size);
-        acceptReceiveBtn.hidden = false;
-        cancelReceiveBtn.hidden = false;
+        console.log('data.isText:', data.isText);
+        console.log('Type détecté:', data.type);
 
-        
+        // Si c'est du texte, accepter automatiquement et masquer les boutons
+        isReceivingText = data.isText === true;
+
+        // Stocker les informations du fichier
+        currentFileName = data.name;
+        currentFileType = data.type;
+        currentFileSize = data.size;
+        senderConnection = data.senderId;
+
+        if (isReceivingText) {
+            console.log('Mode texte détecté - acceptation automatique');
+            fileInfoReceive.hidden = true;
+            acceptReceiveBtn.hidden = true;
+            cancelReceiveBtn.hidden = true;
+
+            // Accepter automatiquement le texte
+            setTimeout(() => {
+                fileBuffer = [];
+                receivedSize = 0;
+
+                progressContainers[1].hidden = false;
+
+                socket.emit('ready-to-receive', {
+                    senderId: senderConnection,
+                    offset: 0,
+                    isResuming: false
+                });
+            }, 100);
+        } else {
+            console.log('Mode fichier normal');
+            fileInfoReceive.hidden = false;
+            incomingFileName.textContent = data.name;
+            incomingFileSize.textContent = formatFileSize(data.size);
+            acceptReceiveBtn.hidden = false;
+            cancelReceiveBtn.hidden = false;
+        }
+
+
         if (data.transferId && data.token) {
             const transferState = {
                 transferId: data.transferId,
@@ -1681,10 +1939,80 @@ document.addEventListener('DOMContentLoaded', () => {
                                 transferId: data.transferId
                             });
 
-                            
+
                             clearTransferState(data.transferId);
 
                             console.log('Transfert terminé avec succès');
+
+                            // Afficher un message de succès temporaire
+                            connectionStatus.className = 'connection-status success';
+                            connectionStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Transfert réussi ! Réinitialisation...</span>';
+
+                            // Garder la protection active pendant la réinitialisation
+                            // Réinitialiser l'interface après 2 secondes
+                            setTimeout(() => {
+                                // Réinitialiser tous les éléments
+                                selectedFiles = [];
+                                textContent = '';
+                                currentTransferType = 'file';
+                                receiverConnection = null;
+
+                                // Désactiver la protection maintenant
+                                isTransferActive = false;
+                                showTransferWarning(false);
+
+                                // Masquer les conteneurs de transfert
+                                codeContainer.hidden = true;
+                                transferStatus.hidden = true;
+                                progressContainers[0].hidden = true;
+
+                                // Réafficher les éléments initiaux
+                                fileDropArea.style.display = 'flex';
+                                fileInfo.hidden = true;
+                                startSendBtn.hidden = false;
+                                startSendBtn.disabled = true;
+                                cancel.style.display = 'none';
+
+                                // Réafficher le sélecteur de type et les conteneurs
+                                const transferTypeSelector = document.querySelector('.transfer-type-selector');
+                                if (transferTypeSelector) {
+                                    transferTypeSelector.style.display = 'flex';
+                                }
+                                if (fileContainer) {
+                                    fileContainer.style.display = 'block';
+                                }
+                                if (textContainer) {
+                                    textContainer.style.display = 'block';
+                                }
+
+                                // Réinitialiser le conteneur de texte
+                                if (textInput) {
+                                    textInput.value = '';
+                                    textCharCount.textContent = '0 caractères';
+                                }
+
+                                // Réinitialiser les barres de progression
+                                progressBars[0].style.width = '0%';
+                                progressPercentages[0].textContent = '0%';
+
+                                // Nettoyer le preview
+                                previewContainer.innerHTML = '';
+                                fileCount.textContent = '0 fichiers sélectionnés';
+                                fileSize.textContent = 'Taille totale: 0 KB';
+
+                                // Réinitialiser les fichiers préparés
+                                window.preparedFileData = null;
+                                window.preparedFile = null;
+
+                                // Remettre le bon conteneur visible
+                                fileContainer.hidden = false;
+                                textContainer.hidden = true;
+
+                                // Réinitialiser le code de transfert
+                                transferCode.textContent = '--------';
+
+                                console.log('Interface réinitialisée');
+                            }, 2000);
                         }
                         return;
                     }
@@ -1803,38 +2131,38 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBars[1].style.width = '100%';
         progressPercentages[1].textContent = '100%';
 
-        
+
         if (window.chunkMap && window.chunkMap.size > 0) {
             console.log('Assemblage de', window.chunkMap.size, 'chunks reçus');
 
-            
+
             const sortedOffsets = Array.from(window.chunkMap.keys()).sort((a, b) => a - b);
 
-            
+
             let totalSize = 0;
             for (const offset of sortedOffsets) {
                 totalSize += window.chunkMap.get(offset).byteLength;
             }
 
-            
+
             const buffer = new Uint8Array(totalSize);
             let position = 0;
 
-            
+
             for (const offset of sortedOffsets) {
                 const chunk = new Uint8Array(window.chunkMap.get(offset));
                 buffer.set(chunk, position);
                 position += chunk.byteLength;
             }
 
-            
+
             fileBlob = new Blob([buffer]);
 
-            
+
             window.chunkMap.clear();
             window.chunkMap = null;
         } else {
-            
+
             const chunks = new Uint8Array(receivedSize);
             let position = 0;
 
@@ -1848,7 +2176,29 @@ document.addEventListener('DOMContentLoaded', () => {
             fileBuffer = [];
         }
 
-        downloadBtn.hidden = false;
+        // Vérifier si c'est du texte
+        if (isReceivingText) {
+            console.log('Affichage du texte reçu');
+            // Afficher le texte reçu
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                receivedTextPreview.textContent = text;
+                receivedTextCharCount.textContent = `${text.length} caractères`;
+
+                // Afficher la zone de texte
+                textReceiveArea.hidden = false;
+                fileInfoReceive.hidden = true;
+                downloadBtn.hidden = true;
+
+                console.log('Texte affiché avec succès');
+            };
+            reader.readAsText(fileBlob);
+        } else {
+            console.log('Affichage du bouton télécharger pour fichier');
+            downloadBtn.hidden = false;
+        }
+
         cancelReceiveBtn.hidden = true;
 
         document.querySelector('.receive-status .connection-status').innerHTML =
@@ -1880,10 +2230,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('cancel-transfer', () => {
         if (document.querySelector('.tab-btn.active').getAttribute('data-tab') === 'send') {
-            resetSendUI();
+            // Afficher le message de refus pour l'expéditeur
+            connectionStatus.className = 'connection-status error';
+            connectionStatus.innerHTML = '<i class="fas fa-times-circle"></i><span>Transfert refusé par le récepteur</span>';
+
+            // Attendre un peu avant de réinitialiser pour que l'utilisateur voie le message
+            setTimeout(() => {
+                resetSendUI();
+            }, 3000);
         } else {
             resetReceiveUI();
-            
+
             resetDownloadTimeDisplay();
         }
     });

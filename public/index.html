@@ -80,9 +80,22 @@
         <main>
             <section id="send" class="tab-content">
                 <div class="card">
-                    <h2>Envoyer un fichier</h2>
+                    <h2>Envoyer</h2>
 
-                    <div class="file-upload-container">
+                    <!-- Sélecteur de type de transfert -->
+                    <div class="transfer-type-selector">
+                        <button class="type-btn active" data-type="file">
+                            <i class="fas fa-file"></i>
+                            Fichiers
+                        </button>
+                        <button class="type-btn" data-type="text">
+                            <i class="fas fa-align-left"></i>
+                            Texte
+                        </button>
+                    </div>
+
+                    <!-- Conteneur pour les fichiers -->
+                    <div class="file-upload-container" id="file-container">
                         <div class="file-drop-area">
                             <i class="fas fa-cloud-upload-alt"></i>
                             <p>Glisser des fichiers/dossiers ici ou</p>
@@ -105,6 +118,26 @@
                             </div>
                             <button style="display: none;" id="cancel-file" class="secondary-btn"
                                 onclick="window.location.reload()">Annuler</button>
+                        </div>
+                    </div>
+
+                    <!-- Conteneur pour le texte -->
+                    <div class="text-upload-container" id="text-container" hidden>
+                        <div class="text-input-area">
+                            <textarea id="text-input" placeholder="Saisissez ou collez votre texte ici..."></textarea>
+                            <div class="text-actions">
+                                <button id="paste-from-clipboard-btn" class="secondary-btn">
+                                    <i class="fas fa-clipboard"></i>
+                                    Coller depuis le presse-papiers
+                                </button>
+                                <button id="clear-text-btn" class="secondary-btn">
+                                    <i class="fas fa-trash"></i>
+                                    Effacer
+                                </button>
+                            </div>
+                            <div class="text-info">
+                                <span id="text-char-count">0 caractères</span>
+                            </div>
                         </div>
                     </div>
 
@@ -145,7 +178,7 @@
 
             <section id="receive" class="tab-content active">
                 <div class="card">
-                    <h2>Recevoir un fichier</h2>
+                    <h2>Recevoir</h2>
 
                     <div class="code-input-container">
                         <h3>Entrez le code de transfert</h3>
@@ -182,6 +215,27 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Zone d'affichage du texte reçu -->
+                        <div class="text-receive-area" hidden>
+                            <div class="received-text-card">
+                                <div class="text-icon-wrapper">
+                                    <i class="fas fa-align-left"></i>
+                                </div>
+                                <div class="text-preview-content">
+                                    <div class="text-label">Texte reçu</div>
+                                    <div class="received-text-preview" id="received-text-preview"></div>
+                                    <div class="text-char-info" id="received-text-char-count">0 caractères</div>
+                                </div>
+                            </div>
+                            <div class="text-receive-actions">
+                                <button id="copy-text-btn" class="primary-btn">
+                                    <i class="fas fa-copy"></i> Copier dans le presse-papiers
+                                </button>
+                                <button id="download-text-btn" class="secondary-btn">
+                                    <i class="fas fa-download"></i> Télécharger en .txt
+                                </button>
+                            </div>
+                        </div>
                         <div class="progress-container" hidden>
                             <div class="progress-bar">
                                 <div class="progress-fill"></div>
@@ -206,7 +260,7 @@
     </div>
     <footer>
         <p>&copy; 2024 - 2025 Sharealuxz - Transférez vos fichiers - <a href="#" id="privacy-link">Politique de
-                confidentialité</a><span id="admin-link-container" style="display: none;"> - <a href="admin-stats.html" style="color: var(--light-text); text-decoration: none;"><i class="fas fa-cog"></i> Admin</a></span>
+                confidentialité</a><span id="admin-link-container" style="display: none;"> - <a href="admin-stats.html" style="color: var(--light-text); text-decoration: none;"><i class="fas fa-cog"></i> Admin</a></span> - <span class="version-tag">v1.1.2</span>
         </p>
         <div class="stats-bar">
             <span><i class="fas fa-users"></i> <span id="stat-users">0</span> connectés</span>
@@ -294,7 +348,6 @@
         </div>
     </div>
 
-    <!-- Modale Contenu ZIP/Archive -->
     <div id="zip-content-modal" class="modal" style="display:none;position:fixed;z-index:10003;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);align-items:center;justify-content:center;">
         <div style="background-color: var(--card-color); color: var(--text-color);max-width:600px;width:90vw;max-height:80vh;padding:2em 1.5em;border-radius:10px;box-shadow:0 4px 30px rgba(0,0,0,0.5);position:relative;display:flex;flex-direction:column;">
             <button id="close-zip-modal" style="position:absolute;top:10px;right:10px;font-size:1.5em;background:none;border:none;cursor:pointer;color:var(--text-color);">&times;</button>

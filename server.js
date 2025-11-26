@@ -463,7 +463,8 @@ io.on('connection', (socket) => {
                 type: data.type,
                 senderId: socket.id,
                 transferId: data.transferId,
-                token: data.token
+                token: data.token,
+                isText: data.isText || false  // Transmettre le flag isText
             });
         } else {
             console.log(`Récepteur ${data.receiverId} non disponible pour le début du transfert`);
