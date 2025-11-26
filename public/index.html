@@ -11,7 +11,6 @@
     <meta name="robots" content="index, follow">
     <meta name="language" content="fr">
     <link rel="canonical" href="https://sharealuxz.fr">
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="1ed94d95-e0ca-4b70-a60f-758a7565535a"></script>
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sharealuxz.fr">
@@ -46,11 +45,8 @@
       "featureList": "Transfert P2P, Code de transfert, Sans inscription, Sécurisé, Gratuit"
     }
     </script>
-
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5140484634474159"
-        crossorigin="anonymous"></script>
     <link rel="icon" href="image.png">
 </head>
 
@@ -69,7 +65,8 @@
         </h1>
         <div class="tabs">
             <button class="tab-btn active l" data-tab="receive">Recevoir</button>
-            <button class="tab-btn r" data-tab="send">Envoyer</button>
+            <button class="tab-btn" data-tab="send">Envoyer</button>
+            <button class="tab-btn r" data-tab="quicksend">Quick Send</button>
         </div>
 
         <button onclick="ChangeMode()" class="dark-light-btn">
@@ -176,6 +173,156 @@
                 </div>
             </section>
 
+            <section id="quicksend" class="tab-content">
+                <div class="card">
+                    <!-- Demande de pseudo initiale (seulement première fois) -->
+                    <div id="quicksend-initial-pseudo" class="quicksend-initial-setup">
+                        <div class="initial-pseudo-card">
+                            <i class="fas fa-user-circle" style="font-size: 4rem; color: var(--primary-color); margin-bottom: 1rem;"></i>
+                            <h3>Bienvenue sur Quick Send !</h3>
+                            <p style="margin-bottom: 1.5rem; color: var(--light-text);">Choisissez un pseudo pour commencer</p>
+                            <input type="text" id="quicksend-initial-pseudo-input" class="pseudo-input" placeholder="Votre pseudo..." maxlength="20">
+                            <p style="font-size: 0.85rem; color: var(--light-text); margin-top: 0.5rem; opacity: 0.8;">
+                                <i class="fas fa-shield-alt" style="color: var(--success-color);"></i>
+                                Votre pseudo n'est jamais stocké sur le serveur, seulement dans votre navigateur
+                            </p>
+                            <button id="quicksend-initial-pseudo-btn" class="primary-btn" style="margin-top: 1rem;">Valider</button>
+                        </div>
+                    </div>
+
+                    <!-- Bouton pour envoyer à quelqu'un -->
+                    <div id="quicksend-send-btn-container" class="quicksend-send-action" hidden>
+                        <button id="quicksend-switch-to-sender-btn" class="primary-btn" style="width: 100%; max-width: 400px; margin: 0 auto; display: block;">
+                            <i class="fas fa-share-alt"></i>
+                            Envoyer à quelqu'un
+                        </button>
+                    </div>
+
+                    <!-- Mode Receiver: Attente automatique -->
+                    <div id="quicksend-receiver-container" class="quicksend-container" hidden>
+
+                        <div class="quicksend-waiting" hidden>
+                            <div class="waiting-status">
+                                <i class="fas fa-circle-notch fa-spin"></i>
+                                <h3>En attente de réception...</h3>
+                                <p>Pseudo: <span id="quicksend-receiver-pseudo-display"></span></p>
+                                <p class="waiting-hint">Quelqu'un peut maintenant vous envoyer un fichier</p>
+                                <button id="quicksend-block-requests-btn" class="secondary-btn" style="margin-top: 1rem;">
+                                    <i class="fas fa-ban"></i>
+                                    Bloquer les demandes
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Zone de réception du fichier -->
+                        <div class="quicksend-incoming-request" hidden>
+                            <div class="incoming-request-card">
+                                <i class="fas fa-paper-plane"></i>
+                                <h3><span id="quicksend-sender-name"></span> veut vous envoyer un fichier</h3>
+                                <div class="incoming-file-details">
+                                    <p class="file-name-display" id="quicksend-incoming-filename"></p>
+                                    <p class="file-size-display" id="quicksend-incoming-filesize"></p>
+                                </div>
+                                <div class="request-actions">
+                                    <button id="quicksend-accept-btn" class="primary-btn">Accepter</button>
+                                    <button id="quicksend-refuse-btn" class="secondary-btn">Refuser</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Progression du téléchargement -->
+                        <div class="quicksend-download-progress" hidden>
+                            <h3>Téléchargement en cours...</h3>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="quicksend-receiver-progress-fill"></div>
+                                </div>
+                                <div class="progress-info">
+                                    <span class="progress-percentage" id="quicksend-receiver-progress-percentage">0%</span>
+                                    <span class="progress-transferred" id="quicksend-receiver-progress-transferred">0 MB / 0 MB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Téléchargement terminé -->
+                        <div class="quicksend-download-complete" hidden>
+                            <i class="fas fa-check-circle" style="color: var(--success-color); font-size: 3em;"></i>
+                            <h3>Fichier reçu avec succès!</h3>
+                            <button id="quicksend-download-file-btn" class="primary-btn">Télécharger</button>
+                        </div>
+                    </div>
+
+                    <!-- Mode Sender: Sélectionner un fichier et choisir un destinataire -->
+                    <div id="quicksend-sender-container" class="quicksend-container" hidden>
+                        <!-- Sélection de fichier -->
+                        <div class="quicksend-file-selection">
+                            <h3>Sélectionnez un fichier à envoyer</h3>
+                            <div class="file-drop-area" id="quicksend-file-drop">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Glisser un fichier ici ou</p>
+                                <label class="select-file-btn">Sélectionner un fichier</label>
+                                <input type="file" id="quicksend-file-input" hidden>
+                            </div>
+
+                            <div class="quicksend-selected-file" hidden>
+                                <div class="file-preview-card">
+                                    <i class="fas fa-file" id="quicksend-file-icon"></i>
+                                    <div class="file-info-text">
+                                        <p class="file-name" id="quicksend-selected-filename"></p>
+                                        <p class="file-size" id="quicksend-selected-filesize"></p>
+                                    </div>
+                                    <button id="quicksend-clear-file-btn" class="icon-btn"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Liste des utilisateurs connectés -->
+                        <div class="quicksend-users-list" hidden>
+                            <h3>Utilisateurs en ligne</h3>
+                            <div class="users-list-container" id="quicksend-users-container">
+                                <p class="no-users-message">Aucun utilisateur en ligne pour le moment...</p>
+                            </div>
+                        </div>
+
+                        <!-- Attente de réponse -->
+                        <div class="quicksend-sender-waiting" hidden>
+                            <div class="waiting-status">
+                                <i class="fas fa-circle-notch fa-spin"></i>
+                                <h3>En attente de la réponse de <span id="quicksend-target-user"></span>...</h3>
+                            </div>
+                        </div>
+
+                        <!-- Réponse refusée -->
+                        <div class="quicksend-request-refused" hidden>
+                            <i class="fas fa-times-circle" style="color: var(--error-color); font-size: 3em;"></i>
+                            <h3><span id="quicksend-refused-user"></span> a refusé votre fichier</h3>
+                            <button id="quicksend-retry-btn" class="primary-btn">Réessayer avec quelqu'un d'autre</button>
+                        </div>
+
+                        <!-- Progression de l'envoi -->
+                        <div class="quicksend-upload-progress" hidden>
+                            <h3>Envoi en cours vers <span id="quicksend-recipient-name"></span>...</h3>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="quicksend-sender-progress-fill"></div>
+                                </div>
+                                <div class="progress-info">
+                                    <span class="progress-percentage" id="quicksend-sender-progress-percentage">0%</span>
+                                    <span class="progress-transferred" id="quicksend-sender-progress-transferred">0 MB / 0 MB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Envoi terminé -->
+                        <div class="quicksend-upload-complete" hidden>
+                            <i class="fas fa-check-circle" style="color: var(--success-color); font-size: 3em;"></i>
+                            <h3>Fichier envoyé avec succès!</h3>
+                            <button id="quicksend-send-another-btn" class="primary-btn">Envoyer un autre fichier</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <section id="receive" class="tab-content active">
                 <div class="card">
                     <h2>Recevoir</h2>
@@ -260,7 +407,7 @@
     </div>
     <footer>
         <p>&copy; 2024 - 2025 Sharealuxz - Transférez vos fichiers - <a href="#" id="privacy-link">Politique de
-                confidentialité</a><span id="admin-link-container" style="display: none;"> - <a href="admin-stats.html" style="color: var(--light-text); text-decoration: none;"><i class="fas fa-cog"></i> Admin</a></span> - <span class="version-tag">v1.1.2</span>
+                confidentialité</a><span id="admin-link-container" style="display: none;"> - <a href="admin-stats.html" style="color: var(--light-text); text-decoration: none;"><i class="fas fa-cog"></i> Admin</a></span> - <span class="version-tag">v1.2.0</span>
         </p>
         <div class="stats-bar">
             <span><i class="fas fa-users"></i> <span id="stat-users">0</span> connectés</span>
@@ -364,6 +511,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/quicksend.js"></script>
 </body>
 
 </html>

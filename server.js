@@ -661,13 +661,170 @@ io.on('connection', (socket) => {
         callback(isConnected);
     });
 
+    // ========================================
+    // QUICK SEND EVENTS
+    // ========================================
+
+    // Enregistrement en tant que receiver
+    socket.on('quicksend-register-receiver', (data) => {
+        socket.quickSendRole = 'receiver';
+        socket.quickSendPseudo = data.pseudo;
+        console.log(`Quick Send: ${data.pseudo} (${socket.id}) s'est enregistré comme receiver`);
+
+        // Notifier tous les senders qu'un nouveau receiver est disponible
+        broadcastQuickSendUsersList();
+    });
+
+    // Enregistrement en tant que sender
+    socket.on('quicksend-register-sender', (data) => {
+        socket.quickSendRole = 'sender';
+        socket.quickSendPseudo = data.pseudo;
+        console.log(`Quick Send: ${data.pseudo} (${socket.id}) s'est enregistré comme sender`);
+    });
+
+    // Désenregistrement
+    socket.on('quicksend-unregister', () => {
+        console.log(`Quick Send: ${socket.quickSendPseudo} (${socket.id}) s'est désenregistré`);
+        const wasReceiver = socket.quickSendRole === 'receiver';
+        socket.quickSendRole = null;
+        socket.quickSendPseudo = null;
+
+        // Si c'était un receiver, mettre à jour la liste pour les senders
+        if (wasReceiver) {
+            broadcastQuickSendUsersList();
+        }
+    });
+
+    // Demander la liste des receivers en ligne
+    socket.on('quicksend-request-users-list', () => {
+        const receivers = [];
+        io.sockets.sockets.forEach((sock) => {
+            if (sock.quickSendRole === 'receiver' && sock.id !== socket.id) {
+                receivers.push({
+                    socketId: sock.id,
+                    pseudo: sock.quickSendPseudo
+                });
+            }
+        });
+        socket.emit('quicksend-users-list', receivers);
+        console.log(`Quick Send: Envoi de la liste des receivers (${receivers.length} en ligne)`);
+    });
+
+    // Envoyer une demande de transfert à un receiver
+    socket.on('quicksend-send-request', (data) => {
+        const receiverSocket = io.sockets.sockets.get(data.receiverSocketId);
+        if (receiverSocket) {
+            receiverSocket.emit('quicksend-incoming-request', {
+                senderSocketId: socket.id,
+                senderPseudo: socket.quickSendPseudo,
+                fileName: data.fileName,
+                fileSize: data.fileSize,
+                fileType: data.fileType
+            });
+            console.log(`Quick Send: ${socket.quickSendPseudo} envoie une demande à ${receiverSocket.quickSendPseudo}`);
+        }
+    });
+
+    // Accepter une demande de transfert
+    socket.on('quicksend-accept-request', (data) => {
+        const senderSocket = io.sockets.sockets.get(data.senderSocketId);
+        if (senderSocket) {
+            senderSocket.emit('quicksend-request-accepted', {
+                receiverSocketId: socket.id,
+                receiverPseudo: socket.quickSendPseudo
+            });
+            socket.emit('quicksend-transfer-start');
+            console.log(`Quick Send: ${socket.quickSendPseudo} a accepté la demande de ${senderSocket.quickSendPseudo}`);
+        }
+    });
+
+    // Refuser une demande de transfert
+    socket.on('quicksend-refuse-request', (data) => {
+        const senderSocket = io.sockets.sockets.get(data.senderSocketId);
+        if (senderSocket) {
+            senderSocket.emit('quicksend-request-refused', {
+                receiverPseudo: socket.quickSendPseudo
+            });
+            console.log(`Quick Send: ${socket.quickSendPseudo} a refusé la demande de ${senderSocket.quickSendPseudo}`);
+        }
+    });
+
+    // Envoyer un chunk de fichier
+    socket.on('quicksend-send-chunk', (data) => {
+        const receiverSocket = io.sockets.sockets.get(data.receiverSocketId);
+        if (receiverSocket) {
+            const progress = (data.offset / data.total) * 100;
+            receiverSocket.emit('quicksend-file-chunk', {
+                chunk: data.chunk,
+                progress: progress,
+                transferred: data.offset,
+                total: data.total
+            });
+        }
+    });
+
+    // Transfert terminé
+    socket.on('quicksend-transfer-complete', (data) => {
+        const receiverSocket = io.sockets.sockets.get(data.receiverSocketId);
+        if (receiverSocket) {
+            receiverSocket.emit('quicksend-transfer-complete', {
+                fileName: data.fileName,
+                fileType: data.fileType
+            });
+            console.log(`Quick Send: Transfert terminé de ${socket.quickSendPseudo} vers ${receiverSocket.quickSendPseudo}`);
+
+            // Mettre à jour les statistiques
+            totalFilesSent++;
+            saveStatsToMongoDB();
+            broadcastStats();
+        }
+    });
+
     socket.on('disconnect', () => {
         console.log('Un utilisateur s\'est déconnecté', socket.id);
+
+        // Notifier les autres utilisateurs si c'est un utilisateur Quick Send
+        if (socket.quickSendRole) {
+            console.log(`Quick Send: ${socket.quickSendPseudo} (${socket.quickSendRole}) s'est déconnecté`);
+
+            // Si c'est un receiver, notifier les senders
+            if (socket.quickSendRole === 'receiver') {
+                io.sockets.sockets.forEach((sock) => {
+                    if (sock.quickSendRole === 'sender') {
+                        sock.emit('quicksend-receiver-disconnected');
+                    }
+                });
+                // Mettre à jour la liste pour les senders restants
+                broadcastQuickSendUsersList();
+            }
+        }
+
         cleanupSocketResources(socket.id);
         broadcastStats();
     });
 });
 
+// Fonction pour diffuser la liste des receivers à tous les senders
+function broadcastQuickSendUsersList() {
+    const receivers = [];
+    io.sockets.sockets.forEach((sock) => {
+        if (sock.quickSendRole === 'receiver') {
+            receivers.push({
+                socketId: sock.id,
+                pseudo: sock.quickSendPseudo
+            });
+        }
+    });
+
+    // Envoyer la liste mise à jour à tous les senders
+    io.sockets.sockets.forEach((sock) => {
+        if (sock.quickSendRole === 'sender') {
+            sock.emit('quicksend-users-list', receivers);
+        }
+    });
+
+    console.log(`Quick Send: Liste des receivers mise à jour et diffusée (${receivers.length} en ligne)`);
+}
 
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 Bytes';

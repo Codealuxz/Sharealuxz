@@ -1,6 +1,9 @@
 // Variable globale pour le mode dark/light
 var mode = localStorage.getItem('mode') || 'light';
 
+// Variable globale pour socket (utilisée aussi par quicksend.js)
+var socket;
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // Notification de migration vers la nouvelle URL (uniquement sur l'ancienne URL)
@@ -132,9 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('connect-btn').click();
         }
 
-    }, 1000); 
+    }, 1000);
 
-    const socket = io({
+    socket = io({
         reconnection: true,
         reconnectionAttempts: Infinity,
         reconnectionDelay: 1,
@@ -702,7 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Au chargement, vérifier l'URL pour l'onglet actif
     const urlParams = new URLSearchParams(window.location.search);
     const tabFromUrl = urlParams.get('tab');
-    if (tabFromUrl && (tabFromUrl === 'send' || tabFromUrl === 'receive')) {
+    if (tabFromUrl && (tabFromUrl === 'send' || tabFromUrl === 'receive' || tabFromUrl === 'quicksend')) {
         switchTab(tabFromUrl);
     }
 
