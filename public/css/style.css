@@ -1445,6 +1445,10 @@ a:hover {
 /* ========================================
    QUICK SEND STYLES
    ======================================== */
+.quicksendbtnhead{
+    border-left: solid 3px var(--text-color);
+}
+
 
 /* Initial setup */
 .quicksend-initial-setup {
