@@ -1446,7 +1446,7 @@ a:hover {
    QUICK SEND STYLES
    ======================================== */
 .quicksendbtnhead{
-    border-left: solid 3px var(--text-color);
+    border-left: solid 3px #000;
 }
 
 
