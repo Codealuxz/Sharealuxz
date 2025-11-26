@@ -168,20 +168,25 @@ header p {
 
 
 /* Tabs */
-.tabs {
+.tabs-container {
     position: absolute;
     left: 50%;
     transform: translate(-50%);
     height: 50px;
     top: 25px;
     display: flex;
+    gap: 1rem;
     justify-content: center;
-    margin-bottom: 2rem;
+    align-items: center;
+}
+
+.tabs {
+    display: flex;
+    justify-content: center;
     border-radius: var(--border-radius);
     background-color: white;
     padding: 0.3rem;
     width: fit-content;
-    margin: 0 auto 2rem;
     box-shadow: var(--card-shadow);
 }
 
@@ -210,6 +215,26 @@ header p {
 }
 
 .tab-btn:hover:not(.active) {
+    background-color: var(--third-color);
+}
+
+/* Style spécial pour Quick Send */
+.tabs-quick {
+    background-color: white;
+}
+
+.tabs-quick .tab-btn {
+    color: var(--text-color);
+    font-weight: 700;
+    border-radius: var(--border-radius);
+}
+
+.tabs-quick .tab-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.tabs-quick .tab-btn:hover:not(.active) {
     background-color: var(--third-color);
 }
 
@@ -1445,10 +1470,6 @@ a:hover {
 /* ========================================
    QUICK SEND STYLES
    ======================================== */
-.quicksendbtnhead{
-    border-left: solid 3px #000;
-}
-
 
 /* Initial setup */
 .quicksend-initial-setup {

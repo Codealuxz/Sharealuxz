@@ -63,10 +63,14 @@
         <h1 onclick="window.location.href='/'"><img src="image.png" alt="Logo"
                 style="width: 50px; height: 50px; filter: drop-shadow(0 0 10px rgba(45, 45, 45, 0.5)); border-radius: 50%;">Sharealuxz
         </h1>
-        <div class="tabs">
-            <button class="tab-btn active l" data-tab="receive">Recevoir</button>
-            <button class="tab-btn" data-tab="send">Envoyer</button>
-            <button class="tab-btn r quicksendbtnhead" data-tab="quicksend">Quick Send</button>
+        <div class="tabs-container">
+            <div class="tabs tabs-main">
+                <button class="tab-btn active l" data-tab="receive">Recevoir</button>
+                <button class="tab-btn r" data-tab="send">Envoyer</button>
+            </div>
+            <div class="tabs tabs-quick">
+                <button class="tab-btn l r quicksendbtnhead" data-tab="quicksend">Quick Send</button>
+            </div>
         </div>
 
         <button onclick="ChangeMode()" class="dark-light-btn">
@@ -407,7 +411,7 @@
     </div>
     <footer>
         <p>&copy; 2024 - 2025 Sharealuxz - Transférez vos fichiers - <a href="#" id="privacy-link">Politique de
-                confidentialité</a><span id="admin-link-container" style="display: none;"> - <a href="admin-stats.html" style="color: var(--light-text); text-decoration: none;"><i class="fas fa-cog"></i> Admin</a></span> - <span class="version-tag">v1.2.0</span>
+                confidentialité</a><span id="admin-link-container" style="display: none;"> - <a href="admin-stats.html" style="color: var(--light-text); text-decoration: none;"><i class="fas fa-cog"></i> Admin</a></span> - <span class="version-tag">v1.2.1</span>
         </p>
         <div class="stats-bar">
             <span><i class="fas fa-users"></i> <span id="stat-users">0</span> connectés</span>
