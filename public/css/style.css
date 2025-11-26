@@ -224,7 +224,7 @@ header p {
 }
 
 .tabs-quick .tab-btn {
-    color: var(--text-color);
+    color: #000;
     font-weight: 700;
     border-radius: var(--border-radius);
 }
