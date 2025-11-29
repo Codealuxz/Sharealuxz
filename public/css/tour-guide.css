@@ -34,6 +34,7 @@
     pointer-events: none;
     z-index: 9999;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    display: none;
 }
 
 .tour-spotlight::after {
