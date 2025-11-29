@@ -436,7 +436,6 @@ function setupSenderListeners() {
     });
 
     socket.on('quicksend-receiver-disconnected', () => {
-        alert('Le destinataire s\'est déconnecté.');
         showQuickSendSection('quicksend-users-list');
         hideQuickSendSection('quicksend-sender-waiting');
         hideQuickSendSection('quicksend-upload-progress');

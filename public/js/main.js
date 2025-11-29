@@ -197,10 +197,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelReceiveBtn = document.getElementById('cancel-receive-btn');
     const downloadBtn = document.getElementById('download-btn');
 
-    const progressContainers = document.querySelectorAll('.progress-container');
-    const progressBars = document.querySelectorAll('.progress-fill');
-    const progressPercentages = document.querySelectorAll('.progress-percentage');
-    const progressTransferred = document.querySelectorAll('.progress-transferred');
+    // Sélectionner spécifiquement les barres de progression des sections Send et Receive
+    const progressContainers = [
+        document.querySelector('#send .progress-container'),
+        document.querySelector('#receive .progress-container')
+    ];
+    const progressBars = [
+        document.querySelector('#send .progress-fill'),
+        document.querySelector('#receive .progress-fill')
+    ];
+    const progressPercentages = [
+        document.querySelector('#send .progress-percentage'),
+        document.querySelector('#receive .progress-percentage')
+    ];
+    const progressTransferred = [
+        document.querySelector('#send .progress-transferred'),
+        document.querySelector('#receive .progress-transferred')
+    ];
 
     // Gestion des cases de code
     function getCodeValue() {
