@@ -1,0 +1,588 @@
+/* ========================================
+   TOUR GUIDE INTERACTIF - SHAREALUXZ
+   Style inspiré de Photoshop, Canva, etc.
+   ======================================== */
+
+/* Overlay principal */
+.tour-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    z-index: 9998;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+}
+
+.tour-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+}
+
+/* Spotlight - Zone éclairée autour de l'élément ciblé */
+.tour-spotlight {
+    position: absolute;
+    border: 3px solid var(--primary-color);
+    border-radius: 8px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75),
+                0 0 20px rgba(var(--primary-rgb), 0.8);
+    pointer-events: none;
+    z-index: 9999;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tour-spotlight::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border: 2px solid rgba(var(--primary-rgb), 0.3);
+    border-radius: 8px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.05);
+    }
+}
+
+/* Tooltip du tutoriel */
+.tour-tooltip {
+    position: fixed;
+    background: var(--card-color);
+    border-radius: 12px;
+    padding: 0;
+    max-width: 700px;
+    min-width: 350px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tour-tooltip.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Header du tooltip */
+.tour-tooltip-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px 12px 0 0;
+    position: relative;
+}
+
+.tour-step-indicator {
+    font-size: 0.85rem;
+    opacity: 0.9;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.tour-tooltip-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+    color: white;
+}
+
+.tour-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.tour-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Contenu du tooltip */
+.tour-tooltip-content {
+    padding: 1.5rem;
+    color: var(--text-color);
+    min-height: auto;
+}
+
+.tour-tooltip-description {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 0 0 0 0;
+    color: var(--light-text);
+}
+
+.tour-tooltip-tip {
+    background: rgba(var(--primary-rgb), 0.1);
+    border-left: 3px solid var(--primary-color);
+    padding: 0.8rem 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    display: none;
+}
+
+.tour-tooltip-tip i {
+    color: var(--primary-color);
+    margin-right: 0.5rem;
+}
+
+/* Footer du tooltip avec navigation */
+.tour-tooltip-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tour-progress {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.tour-progress-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.tour-progress-dot.active {
+    background: var(--primary-color);
+    width: 24px;
+    border-radius: 4px;
+}
+
+.tour-nav-buttons {
+    display: flex;
+    gap: 0.8rem;
+}
+
+.tour-btn {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tour-btn-secondary {
+    background: var(--border-color);
+    color: var(--text-color);
+}
+
+.tour-btn-secondary:hover {
+    background: var(--text-color);
+    color: var(--background-color);
+}
+
+.tour-btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.tour-btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateX(3px);
+}
+
+.tour-btn-skip {
+    background: transparent;
+    color: var(--light-text);
+    padding: 0.6rem;
+}
+
+.tour-btn-skip:hover {
+    color: var(--text-color);
+}
+
+/* Flèche du tooltip pointant vers l'élément */
+.tour-tooltip::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;
+}
+
+/* Positions de la flèche */
+.tour-tooltip.position-bottom::before {
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-bottom-color: var(--primary-color);
+}
+
+.tour-tooltip.position-top::before {
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-top-color: var(--primary-color);
+}
+
+.tour-tooltip.position-left::before {
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-left-color: var(--primary-color);
+}
+
+.tour-tooltip.position-right::before {
+    left: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-right-color: var(--primary-color);
+}
+
+/* Bouton de démarrage du tutoriel */
+.tour-start-fab {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.4);
+    z-index: 9997;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tour-start-fab:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.5);
+}
+
+/* Tooltip du FAB */
+.tour-fab-tooltip {
+    position: absolute;
+    left: 55px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card-color);
+    color: var(--text-color);
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+}
+
+.tour-start-fab:hover .tour-fab-tooltip {
+    opacity: 1;
+    visibility: visible;
+    left: 58px;
+}
+
+.tour-fab-tooltip::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    border-right-color: var(--card-color);
+}
+
+/* Modal de bienvenue du tutoriel */
+.tour-welcome-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: var(--card-color);
+    border-radius: 16px;
+    padding: 0;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    z-index: 10001;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tour-welcome-modal.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.tour-welcome-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    padding: 2rem;
+    text-align: center;
+    border-radius: 16px 16px 0 0;
+}
+
+.tour-welcome-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.tour-welcome-header h2 {
+    color: white;
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+.tour-welcome-content {
+    padding: 2rem;
+}
+
+.tour-welcome-content p {
+    color: var(--light-text);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.tour-features-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+}
+
+.tour-features-list li {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem;
+    margin: 0.5rem 0;
+    background: rgba(var(--primary-rgb), 0.05);
+    border-radius: 8px;
+}
+
+.tour-features-list i {
+    color: var(--primary-color);
+    font-size: 1.3rem;
+    width: 24px;
+    text-align: center;
+}
+
+.tour-welcome-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 1rem;
+}
+
+.tour-welcome-footer button {
+    flex: 1;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tour-welcome-skip {
+    background: var(--border-color);
+    color: var(--text-color);
+}
+
+.tour-welcome-skip:hover {
+    background: var(--text-color);
+    color: var(--background-color);
+}
+
+.tour-welcome-start {
+    background: var(--primary-color);
+    color: white;
+}
+
+.tour-welcome-start:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+}
+
+/* Animations d'entrée */
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Badge "Nouveau" sur le bouton tutoriel */
+.tour-new-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff4444;
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 12px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .tour-tooltip {
+        max-width: 90%;
+        min-width: auto;
+        left: 5% !important;
+        right: 5%;
+    }
+
+    .tour-tooltip::before {
+        display: none;
+    }
+
+    .tour-start-fab {
+        bottom: 1rem;
+        left: 1rem;
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .tour-fab-tooltip {
+        display: none;
+    }
+
+    .tour-welcome-modal {
+        width: 95%;
+    }
+
+    .tour-tooltip-header,
+    .tour-tooltip-content,
+    .tour-tooltip-footer {
+        padding: 1rem;
+    }
+
+    .tour-tooltip-title {
+        font-size: 1.1rem;
+    }
+
+    .tour-tooltip-description {
+        font-size: 0.95rem;
+    }
+
+    .tour-welcome-header,
+    .tour-welcome-content {
+        padding: 1.5rem;
+    }
+
+    .tour-nav-buttons {
+        flex-wrap: wrap;
+    }
+
+    .tour-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+/* Empêcher le scroll pendant le tour */
+body.tour-active {
+    overflow: hidden;
+}
+
+/* Effet de zoom sur l'élément ciblé */
+.tour-element-highlighted {
+    transition: all 0.3s ease;
+}
+
+/* Curseur personnalisé pendant le tour */
+.tour-overlay.active {
+    cursor: default;
+}

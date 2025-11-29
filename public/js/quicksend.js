@@ -561,6 +561,11 @@ function sendQuickSendFile(receiverSocketId) {
 
             hideQuickSendSection('quicksend-upload-progress');
             showQuickSendSection('quicksend-upload-complete');
+
+            // Rafraîchir la page après 2 secondes pour revenir à l'état initial
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
         }
     };
 

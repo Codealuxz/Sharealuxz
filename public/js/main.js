@@ -1964,70 +1964,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             connectionStatus.className = 'connection-status success';
                             connectionStatus.innerHTML = '<i class="fas fa-check-circle"></i><span>Transfert réussi ! Réinitialisation...</span>';
 
-                            // Garder la protection active pendant la réinitialisation
-                            // Réinitialiser l'interface après 2 secondes
+                            // Rafraîchir la page après 2 secondes pour revenir à l'état initial
                             setTimeout(() => {
-                                // Réinitialiser tous les éléments
-                                selectedFiles = [];
-                                textContent = '';
-                                currentTransferType = 'file';
-                                receiverConnection = null;
-
-                                // Désactiver la protection maintenant
-                                isTransferActive = false;
-                                showTransferWarning(false);
-
-                                // Masquer les conteneurs de transfert
-                                codeContainer.hidden = true;
-                                transferStatus.hidden = true;
-                                progressContainers[0].hidden = true;
-
-                                // Réafficher les éléments initiaux
-                                fileDropArea.style.display = 'flex';
-                                fileInfo.hidden = true;
-                                startSendBtn.hidden = false;
-                                startSendBtn.disabled = true;
-                                cancel.style.display = 'none';
-
-                                // Réafficher le sélecteur de type et les conteneurs
-                                const transferTypeSelector = document.querySelector('.transfer-type-selector');
-                                if (transferTypeSelector) {
-                                    transferTypeSelector.style.display = 'flex';
-                                }
-                                if (fileContainer) {
-                                    fileContainer.style.display = 'block';
-                                }
-                                if (textContainer) {
-                                    textContainer.style.display = 'block';
-                                }
-
-                                // Réinitialiser le conteneur de texte
-                                if (textInput) {
-                                    textInput.value = '';
-                                    textCharCount.textContent = '0 caractères';
-                                }
-
-                                // Réinitialiser les barres de progression
-                                progressBars[0].style.width = '0%';
-                                progressPercentages[0].textContent = '0%';
-
-                                // Nettoyer le preview
-                                previewContainer.innerHTML = '';
-                                fileCount.textContent = '0 fichiers sélectionnés';
-                                fileSize.textContent = 'Taille totale: 0 KB';
-
-                                // Réinitialiser les fichiers préparés
-                                window.preparedFileData = null;
-                                window.preparedFile = null;
-
-                                // Remettre le bon conteneur visible
-                                fileContainer.hidden = false;
-                                textContainer.hidden = true;
-
-                                // Réinitialiser le code de transfert
-                                transferCode.textContent = '--------';
-
-                                console.log('Interface réinitialisée');
+                                window.location.reload();
                             }, 2000);
                         }
                         return;
