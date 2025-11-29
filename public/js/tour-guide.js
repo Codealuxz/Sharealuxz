@@ -528,13 +528,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Afficher la modal de bienvenue automatiquement pour les nouveaux utilisateurs
     const hasSeenTour = localStorage.getItem('firstTuto');
-    const hasAcceptedTerms = localStorage.getItem('terms_accepted');
 
-    // Afficher le tutoriel seulement après avoir accepté les conditions
-    if (!hasSeenTour && hasAcceptedTerms) {
+    // Afficher le tutoriel pour les nouveaux utilisateurs (sans attendre l'acceptation des conditions)
+    if (!hasSeenTour) {
+        // Attendre un peu que la page soit complètement chargée et que l'éventuelle modal de confidentialité soit fermée
         setTimeout(() => {
-            tour.showWelcomeModal();
-        }, 2000); // 2 secondes après le chargement de la page
+            const hasAcceptedTerms = localStorage.getItem('sharealuxz_terms_accepted');
+            if (hasAcceptedTerms) {
+                tour.showWelcomeModal();
+            }
+        }, 3000); // 3 secondes après le chargement de la page
     }
 });
 

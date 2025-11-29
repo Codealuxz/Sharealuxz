@@ -105,6 +105,16 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('sharealuxz_terms_accepted', 'true');
         termsModal.style.display = 'none';
         document.body.style.overflow = 'auto';
+
+        // Afficher le tutoriel pour les nouveaux utilisateurs
+        const hasSeenTour = localStorage.getItem('firstTuto');
+        if (!hasSeenTour) {
+            setTimeout(() => {
+                if (typeof tour !== 'undefined' && tour.showWelcomeModal) {
+                    tour.showWelcomeModal();
+                }
+            }, 1000); // 1 seconde après l'acceptation
+        }
     });
 
     // Gérer le refus
